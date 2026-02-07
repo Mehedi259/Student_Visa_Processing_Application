@@ -10,8 +10,12 @@ import '../constant/api_constant.dart';
 import '../storage/storage_helper.dart';
 
 class ApiService {
-  /// POST Request
-  static Future<dynamic> postRequest(String endpoint, {Map<String, dynamic>? body}) async {
+  static bool _isRefreshing = false;
+  static List<Function> _requestQueue = [];
+
+  /// POST Request with auto token refresh
+  static Future<dynamic> postRequest(String endpoint,
+      {Map<String, dynamic>? body}) async {
     try {
       final token = await StorageHelper.getToken();
       final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint");
@@ -25,8 +29,23 @@ class ApiService {
         body: jsonEncode(body),
       );
 
-      developer.log('📥 Response Status: ${response.statusCode}', name: 'ApiService');
+      developer.log('📥 Response Status: ${response.statusCode}',
+          name: 'ApiService');
       developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
+
+      // Handle 401 Unauthorized - Token expired
+      if (response.statusCode == 401 && endpoint != ApiConstants.refresh) {
+        developer.log('🔄 Token expired, attempting refresh...',
+            name: 'ApiService');
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          // Retry the request with new token
+          return postRequest(endpoint, body: body);
+        } else {
+          throw Exception("Session expired. Please login again.");
+        }
+      }
 
       return processResponse(response);
     } catch (e) {
@@ -35,18 +54,35 @@ class ApiService {
     }
   }
 
-  /// GET Request
-  static Future<dynamic> getRequest(String endpoint, {Map<String, String>? queryParams}) async {
+  /// GET Request with auto token refresh
+  static Future<dynamic> getRequest(String endpoint,
+      {Map<String, String>? queryParams}) async {
     try {
       final token = await StorageHelper.getToken();
-      final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint").replace(queryParameters: queryParams);
+      final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint")
+          .replace(queryParameters: queryParams);
 
       developer.log('📤 GET Request to: $uri', name: 'ApiService');
 
       final response = await http.get(uri, headers: _headers(token));
 
-      developer.log('📥 Response Status: ${response.statusCode}', name: 'ApiService');
+      developer.log('📥 Response Status: ${response.statusCode}',
+          name: 'ApiService');
       developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
+
+      // Handle 401 Unauthorized - Token expired
+      if (response.statusCode == 401) {
+        developer.log('🔄 Token expired, attempting refresh...',
+            name: 'ApiService');
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          // Retry the request with new token
+          return getRequest(endpoint, queryParams: queryParams);
+        } else {
+          throw Exception("Session expired. Please login again.");
+        }
+      }
 
       return processResponse(response);
     } catch (e) {
@@ -55,8 +91,9 @@ class ApiService {
     }
   }
 
-  /// PATCH Request (for updating data)
-  static Future<dynamic> patchRequest(String endpoint, {Map<String, dynamic>? body}) async {
+  /// PATCH Request with auto token refresh
+  static Future<dynamic> patchRequest(String endpoint,
+      {Map<String, dynamic>? body}) async {
     try {
       final token = await StorageHelper.getToken();
       final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint");
@@ -70,8 +107,23 @@ class ApiService {
         body: jsonEncode(body),
       );
 
-      developer.log('📥 Response Status: ${response.statusCode}', name: 'ApiService');
+      developer.log('📥 Response Status: ${response.statusCode}',
+          name: 'ApiService');
       developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
+
+      // Handle 401 Unauthorized - Token expired
+      if (response.statusCode == 401) {
+        developer.log('🔄 Token expired, attempting refresh...',
+            name: 'ApiService');
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          // Retry the request with new token
+          return patchRequest(endpoint, body: body);
+        } else {
+          throw Exception("Session expired. Please login again.");
+        }
+      }
 
       return processResponse(response);
     } catch (e) {
@@ -82,11 +134,11 @@ class ApiService {
 
   /// Multipart PATCH Request (for file uploads with PATCH)
   static Future<dynamic> patchMultipartRequest(
-      String endpoint, {
-        Map<String, String>? fields,
-        Map<String, File>? files,
-        Map<String, Uint8List>? webFiles,
-      }) async {
+    String endpoint, {
+    Map<String, String>? fields,
+    Map<String, File>? files,
+    Map<String, Uint8List>? webFiles,
+  }) async {
     try {
       final token = await StorageHelper.getToken();
       final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint");
@@ -104,7 +156,8 @@ class ApiService {
 
       if (!kIsWeb && files != null) {
         for (var entry in files.entries) {
-          final file = await http.MultipartFile.fromPath(entry.key, entry.value.path);
+          final file =
+              await http.MultipartFile.fromPath(entry.key, entry.value.path);
           request.files.add(file);
         }
       }
@@ -132,11 +185,11 @@ class ApiService {
 
   /// Multipart PUT Request (legacy support)
   static Future<dynamic> putMultipartRequest(
-      String endpoint, {
-        Map<String, String>? fields,
-        Map<String, File>? files,
-        Map<String, Uint8List>? webFiles,
-      }) async {
+    String endpoint, {
+    Map<String, String>? fields,
+    Map<String, File>? files,
+    Map<String, Uint8List>? webFiles,
+  }) async {
     // Use PATCH instead of PUT for consistency
     return patchMultipartRequest(
       endpoint,
@@ -160,6 +213,67 @@ class ApiService {
     return headers;
   }
 
+  /// Refresh Token Logic
+  static Future<bool> _refreshToken() async {
+    if (_isRefreshing) {
+      developer.log('⏳ Token refresh already in progress', name: 'ApiService');
+      return false;
+    }
+
+    _isRefreshing = true;
+
+    try {
+      final refreshToken = await StorageHelper.getRefreshToken();
+
+      if (refreshToken == null || refreshToken.isEmpty) {
+        developer.log('❌ No refresh token available', name: 'ApiService');
+        _isRefreshing = false;
+        return false;
+      }
+
+      developer.log('🔄 Refreshing access token...', name: 'ApiService');
+
+      final uri = Uri.parse("${ApiConstants.baseUrl}${ApiConstants.refresh}");
+      final response = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"refreshToken": refreshToken}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Save new tokens
+        if (data['accessToken'] != null) {
+          await StorageHelper.saveToken(data['accessToken']);
+          developer.log('✅ New access token saved', name: 'ApiService');
+        }
+
+        if (data['refreshToken'] != null) {
+          await StorageHelper.saveRefreshToken(data['refreshToken']);
+          developer.log('✅ New refresh token saved', name: 'ApiService');
+        }
+
+        _isRefreshing = false;
+        return true;
+      } else {
+        developer.log('❌ Token refresh failed: ${response.statusCode}',
+            name: 'ApiService');
+        _isRefreshing = false;
+
+        // Clear tokens on refresh failure
+        await StorageHelper.clearToken();
+        await StorageHelper.clearRefreshToken();
+
+        return false;
+      }
+    } catch (e) {
+      developer.log('❌ Token refresh error: $e', name: 'ApiService');
+      _isRefreshing = false;
+      return false;
+    }
+  }
+
   /// Response Handler
   static dynamic processResponse(http.Response response) {
     final statusCode = response.statusCode;
@@ -176,7 +290,8 @@ class ApiService {
         return {};
       }
     } else {
-      developer.log('❌ HTTP Error ${response.statusCode}: ${response.body}', name: 'ApiService');
+      developer.log('❌ HTTP Error ${response.statusCode}: ${response.body}',
+          name: 'ApiService');
       throw Exception("Error ${response.statusCode}: ${response.body}");
     }
   }

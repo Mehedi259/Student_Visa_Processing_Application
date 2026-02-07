@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class StorageHelper {
   static const String _tokenKey = "access_token";
+  static const String _refreshTokenKey = "refresh_token";
   static const String _rememberMeKey = "remember_me";
 
   /// Save Token
@@ -23,6 +24,26 @@ class StorageHelper {
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+  }
+
+  /// Save Refresh Token
+  static Future<void> saveRefreshToken(String refreshToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    final safe = refreshToken.trim();
+    await prefs.setString(_refreshTokenKey, safe);
+  }
+
+  /// Get Refresh Token
+  static Future<String?> getRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    final refreshToken = prefs.getString(_refreshTokenKey);
+    return refreshToken?.trim();
+  }
+
+  /// Clear Refresh Token
+  static Future<void> clearRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_refreshTokenKey);
   }
 
   /// Save Remember Me preference
