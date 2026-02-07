@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../global/controler/auth/login_controler.dart';
 
@@ -52,6 +53,34 @@ class _LoginScreenState extends State<LoginScreen> {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Launch Register URL in external browser
+  Future<void> _launchRegisterUrl() async {
+    final url = Uri.parse('https://world.iywt.com/portal');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not open registration page'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -112,7 +141,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   borderRadius: BorderRadius.vertical(top: Radius.circular(50)),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 40),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 22, vertical: 40),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -135,26 +165,37 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 8),
                       Obx(() => _buildTextField(
-                        controller: controller.passwordController,
-                        focusNode: _passwordFocusNode,
-                        hint: 'Password',
-                        isFocused: _isPasswordFocused,
-                        obscureText: controller.obscurePassword.value,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            controller.obscurePassword.value
-                                ? Icons.visibility_off
-                                : Icons.visibility,
-                            color: const Color(0xFFE7E7E7),
-                            size: 16,
-                          ),
-                          onPressed: controller.togglePasswordVisibility,
-                        ),
-                      )),
+                            controller: controller.passwordController,
+                            focusNode: _passwordFocusNode,
+                            hint: 'Password',
+                            isFocused: _isPasswordFocused,
+                            obscureText: controller.obscurePassword.value,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                controller.obscurePassword.value
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
+                                color: const Color(0xFFE7E7E7),
+                                size: 16,
+                              ),
+                              onPressed: controller.togglePasswordVisibility,
+                            ),
+                          )),
                       const SizedBox(height: 8),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          TextButton(
+                            onPressed: () => _launchRegisterUrl(),
+                            child: const Text(
+                              'Register?',
+                              style: TextStyle(
+                                color: Color(0xFFFDFDFD),
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
                           TextButton(
                             onPressed: () => context.push('/forgetPassword'),
                             child: const Text(
@@ -197,23 +238,19 @@ class _LoginScreenState extends State<LoginScreen> {
       height: 52.63,
       decoration: BoxDecoration(
         border: Border.all(
-          color: isFocused
-              ? const Color(0xFFFDFDFD)
-              : const Color(0xFFC7C7C7),
+          color: isFocused ? const Color(0xFFFDFDFD) : const Color(0xFFC7C7C7),
           width: isFocused ? 2 : 1,
         ),
         borderRadius: BorderRadius.circular(10),
-        color: isFocused
-            ? const Color(0xFF2E4A7F)
-            : Colors.transparent,
+        color: isFocused ? const Color(0xFF2E4A7F) : Colors.transparent,
         boxShadow: isFocused
             ? [
-          BoxShadow(
-            color: const Color(0xFFFDFDFD).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ]
+                BoxShadow(
+                  color: const Color(0xFFFDFDFD).withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
             : null,
       ),
       child: TextField(
@@ -247,38 +284,39 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _buildRememberMeCheckbox(LoginController controller) {
     return Obx(() => Row(
-      children: [
-        GestureDetector(
-          onTap: controller.toggleRememberMe,
-          child: Container(
-            width: 15,
-            height: 15,
-            decoration: BoxDecoration(
-              color: controller.rememberMe.value
-                  ? const Color(0xFFF5F5F7)
-                  : Colors.transparent,
-              border: Border.all(color: const Color(0xFFF5F5F7), width: 1),
-              borderRadius: BorderRadius.circular(2),
+          children: [
+            GestureDetector(
+              onTap: controller.toggleRememberMe,
+              child: Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                  color: controller.rememberMe.value
+                      ? const Color(0xFFF5F5F7)
+                      : Colors.transparent,
+                  border: Border.all(color: const Color(0xFFF5F5F7), width: 1),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+                child: controller.rememberMe.value
+                    ? const Icon(Icons.check,
+                        size: 12, color: Color(0xFF375BA4))
+                    : null,
+              ),
             ),
-            child: controller.rememberMe.value
-                ? const Icon(Icons.check, size: 12, color: Color(0xFF375BA4))
-                : null,
-          ),
-        ),
-        const SizedBox(width: 8),
-        GestureDetector(
-          onTap: controller.toggleRememberMe,
-          child: const Text(
-            'Remember me',
-            style: TextStyle(
-              color: Color(0xFFE7E7E7),
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: controller.toggleRememberMe,
+              child: const Text(
+                'Remember me',
+                style: TextStyle(
+                  color: Color(0xFFE7E7E7),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
-    ));
+          ],
+        ));
   }
 
   Widget _buildLoginButtonRow(LoginController controller) {
@@ -286,50 +324,51 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         Expanded(
           child: Obx(() => GestureDetector(
-            onTap: controller.isLoading.value ? null : controller.handleLogin,
-            child: Container(
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFDFDFD),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              alignment: Alignment.center,
-              child: controller.isLoading.value
-                  ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    Color(0xFF375BA4),
+                onTap:
+                    controller.isLoading.value ? null : controller.handleLogin,
+                child: Container(
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDFDFD),
+                    borderRadius: BorderRadius.circular(10),
                   ),
+                  alignment: Alignment.center,
+                  child: controller.isLoading.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xFF375BA4),
+                            ),
+                          ),
+                        )
+                      : const Text(
+                          'Log in',
+                          style: TextStyle(
+                            color: Color(0xFF375BA4),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                 ),
-              )
-                  : const Text(
-                'Log in',
-                style: TextStyle(
-                  color: Color(0xFF375BA4),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          )),
+              )),
         ),
         const SizedBox(width: 8),
         Obx(() => GestureDetector(
-          onTap: controller.canUseBiometric.value
-              ? controller.handleBiometricLogin
-              : null,
-          child: Opacity(
-            opacity: controller.canUseBiometric.value ? 1.0 : 0.5,
-            child: Image.asset(
-              Assets.images.loginScreenFaceIcon.path,
-              width: 60,
-              height: 60,
-            ),
-          ),
-        )),
+              onTap: controller.canUseBiometric.value
+                  ? controller.handleBiometricLogin
+                  : null,
+              child: Opacity(
+                opacity: controller.canUseBiometric.value ? 1.0 : 0.5,
+                child: Image.asset(
+                  Assets.images.loginScreenFaceIcon.path,
+                  width: 60,
+                  height: 60,
+                ),
+              ),
+            )),
       ],
     );
   }
