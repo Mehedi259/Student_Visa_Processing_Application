@@ -12,7 +12,8 @@ class HomeController extends GetxController {
   // Observable variables
   final isLoading = false.obs;
   final Rx<DashboardModel?> dashboardData = Rx<DashboardModel?>(null);
-  final Rx<StudentInformationModel?> studentInfo = Rx<StudentInformationModel?>(null);
+  final Rx<StudentInformationModel?> studentInfo =
+      Rx<StudentInformationModel?>(null);
 
   @override
   void onInit() {
@@ -44,9 +45,12 @@ class HomeController extends GetxController {
 
       if (result != null && result['success'] == true) {
         dashboardData.value = result['data'] as DashboardModel?;
-        developer.log('✅ Dashboard loaded successfully', name: 'HomeController');
+        developer.log('✅ Dashboard loaded successfully',
+            name: 'HomeController');
       } else {
-        developer.log('❌ Dashboard fetch failed: ${result?['error'] ?? 'Unknown error'}', name: 'HomeController');
+        developer.log(
+            '❌ Dashboard fetch failed: ${result?['error'] ?? 'Unknown error'}',
+            name: 'HomeController');
       }
     } catch (e) {
       developer.log('❌ Dashboard error: $e', name: 'HomeController');
@@ -62,9 +66,11 @@ class HomeController extends GetxController {
 
       if (result != null) {
         studentInfo.value = result;
-        developer.log('✅ Student information loaded successfully', name: 'HomeController');
+        developer.log('✅ Student information loaded successfully',
+            name: 'HomeController');
       } else {
-        developer.log('❌ Student information fetch failed', name: 'HomeController');
+        developer.log('❌ Student information fetch failed',
+            name: 'HomeController');
       }
     } catch (e) {
       developer.log('❌ Student information error: $e', name: 'HomeController');
@@ -78,13 +84,20 @@ class HomeController extends GetxController {
 
   /// Get greeting based on time
   String getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
+    // Get current local time
+    final now = DateTime.now();
+    final hour = now.hour;
+
+    developer.log('Current hour: $hour', name: 'HomeController');
+
+    if (hour >= 5 && hour < 12) {
       return 'Good Morning!';
-    } else if (hour < 17) {
+    } else if (hour >= 12 && hour < 17) {
       return 'Good Afternoon!';
-    } else {
+    } else if (hour >= 17 && hour < 21) {
       return 'Good Evening!';
+    } else {
+      return 'Good Night!';
     }
   }
 
