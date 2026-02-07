@@ -66,10 +66,10 @@ class _DetailsTabState extends State<DetailsTab> {
                     decoration: const BoxDecoration(
                       color: Color(0xFFF5F5F7),
                       border: Border(
-                          bottom: BorderSide(
-                              color: Color(0xFFB0B0B0), width: 0.5)),
+                          bottom:
+                              BorderSide(color: Color(0xFFB0B0B0), width: 0.5)),
                       borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(11)),
+                          BorderRadius.vertical(top: Radius.circular(11)),
                     ),
                     child: Row(
                       children: [
@@ -161,7 +161,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 ],
               ),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
             // Instructions Section
             if (detail.instructions.isNotEmpty)
@@ -210,7 +210,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 ),
               ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
 
             // Sample Document Section
             if (detail.sampleUrl != null && detail.sampleUrl!.isNotEmpty)
@@ -287,18 +287,17 @@ class _DetailsTabState extends State<DetailsTab> {
     VoidCallback? onTap,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 4),
+      margin: const EdgeInsets.only(bottom: 2),
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F7),
         border: Border.all(color: const Color(0xFFB0B0B0), width: 0.5),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Column(
         children: [
           InkWell(
             onTap: onTap,
-            borderRadius:
-            const BorderRadius.vertical(top: Radius.circular(10)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -306,7 +305,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 border: const Border(
                     bottom: BorderSide(color: Color(0xFFB0B0B0), width: 0.5)),
                 borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(10)),
+                    const BorderRadius.vertical(top: Radius.circular(10)),
               ),
               child: Row(
                 children: [
@@ -323,7 +322,8 @@ class _DetailsTabState extends State<DetailsTab> {
               ),
             ),
           ),
-          if (isExpanded) Padding(padding: const EdgeInsets.all(16), child: child),
+          if (isExpanded)
+            Padding(padding: const EdgeInsets.all(12), child: child),
         ],
       ),
     );

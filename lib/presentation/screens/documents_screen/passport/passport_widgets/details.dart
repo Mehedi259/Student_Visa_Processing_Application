@@ -8,7 +8,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/custom_assets/assets.gen.dart';
 import '../../../../../global/controler/documents/documents_controler.dart';
 
-
 class DetailsTab extends StatefulWidget {
   final double horizontalPadding;
 
@@ -175,7 +174,7 @@ class _DetailsTabState extends State<DetailsTab> {
               ),
             ),
 
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
 
             // Instructions Section
             if (detail.instructions.isNotEmpty)
@@ -224,7 +223,7 @@ class _DetailsTabState extends State<DetailsTab> {
                 ),
               ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
 
             // Sample Document Section
             if (detail.sampleUrl != null && detail.sampleUrl!.isNotEmpty)
@@ -306,7 +305,7 @@ class _DetailsTabState extends State<DetailsTab> {
       decoration: BoxDecoration(
         color: const Color(0xFFF5F5F7),
         border: Border.all(color: const Color(0xFFB0B0B0), width: 0.5),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(0),
       ),
       child: Column(
         children: [
@@ -348,7 +347,7 @@ class _DetailsTabState extends State<DetailsTab> {
           ),
           if (isExpanded)
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(24),
               child: child,
             ),
         ],
