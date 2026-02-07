@@ -17,6 +17,7 @@ dependencies:
   auto_size_text: ^3.0.0
   flutter_screenutil: ^5.9.3
   flutter_markdown: ^0.7.4+1
+  shimmer: ^3.0.0
 
   # State Management & Routing
   get: ^4.7.2

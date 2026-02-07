@@ -24,8 +24,8 @@ class LoginService {
       developer.log('✅ Login successful', name: 'LoginService');
 
       // Extract and save token
-      if (response != null && response['token'] != null) {
-        final token = response['token']['result'];
+      if (response != null && response['accessToken'] != null) {
+        final token = response['accessToken'];
         if (token != null && token.isNotEmpty) {
           await StorageHelper.saveToken(token);
           developer.log('💾 Token saved successfully', name: 'LoginService');

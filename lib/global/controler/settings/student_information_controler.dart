@@ -20,9 +20,11 @@ class StudentInformationController extends GetxController {
   final selectedGender = 'Male'.obs;
   final selectedPronoun = 'He / Him'.obs;
 
-  File? profilePhotoFile;
-  Uint8List? webProfilePhoto;
+  // Image handling
+  final Rx<File?> profilePhotoFile = Rx<File?>(null);
+  final Rx<Uint8List?> webProfilePhoto = Rx<Uint8List?>(null);
   final profilePhotoUrl = ''.obs;
+  final hasNewPhoto = false.obs; // Track if user picked a new photo
 
   @override
   void onInit() {
@@ -55,20 +57,47 @@ class StudentInformationController extends GetxController {
     selectedGender.value = data.gender ?? 'Male';
     selectedPronoun.value = data.pronouns ?? 'He / Him';
     profilePhotoUrl.value = data.profilePhotoUrl ?? '';
+    hasNewPhoto.value = false; // Reset when loading data
   }
 
   // Pick profile photo
   Future<void> pickProfilePhoto() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
 
-    if (pickedFile != null) {
-      if (kIsWeb) {
-        webProfilePhoto = await pickedFile.readAsBytes();
-      } else {
-        profilePhotoFile = File(pickedFile.path);
+      if (pickedFile != null) {
+        if (kIsWeb) {
+          // For web platform
+          final bytes = await pickedFile.readAsBytes();
+          webProfilePhoto.value = bytes;
+          profilePhotoFile.value = null;
+        } else {
+          // For mobile platform
+          profilePhotoFile.value = File(pickedFile.path);
+          webProfilePhoto.value = null;
+        }
+
+        // Update the preview URL
+        profilePhotoUrl.value = pickedFile.path;
+        hasNewPhoto.value = true;
+
+        debugPrint('📸 Photo picked successfully: ${pickedFile.path}');
       }
-      profilePhotoUrl.value = pickedFile.path;
+    } catch (e) {
+      debugPrint('❌ Error picking photo: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to pick photo',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -126,8 +155,8 @@ class StudentInformationController extends GetxController {
 
       final success = await StudentInformationService.updateStudentInformation(
         fields: fields,
-        profilePhoto: profilePhotoFile,
-        webProfilePhoto: webProfilePhoto,
+        profilePhoto: profilePhotoFile.value,
+        webProfilePhoto: webProfilePhoto.value,
       );
 
       if (success) {
@@ -138,6 +167,8 @@ class StudentInformationController extends GetxController {
           backgroundColor: Colors.green,
           colorText: Colors.white,
         );
+
+        // Reload data to get updated profile photo URL
         await loadStudentInformation();
       } else {
         Get.snackbar(
@@ -149,9 +180,10 @@ class StudentInformationController extends GetxController {
         );
       }
     } catch (e) {
+      debugPrint('❌ Error updating profile: $e');
       Get.snackbar(
         'Error',
-        'An error occurred',
+        'An error occurred: ${e.toString()}',
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: Colors.red,
         colorText: Colors.white,

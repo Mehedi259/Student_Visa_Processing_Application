@@ -212,9 +212,6 @@ class $AssetsImagesGen {
   AssetGenImage get profileInactive =>
       const AssetGenImage('assets/images/profileInactive.png');
 
-  /// File path: assets/images/profilepicture.png
-  AssetGenImage get profilepicture =>
-      const AssetGenImage('assets/images/profilepicture.png');
 
   /// File path: assets/images/requirements.png
   AssetGenImage get requirements =>
@@ -312,7 +309,6 @@ class $AssetsImagesGen {
         privacyPolicy,
         profileActive,
         profileInactive,
-        profilepicture,
         requirements,
         sampleDocument,
         scanner,

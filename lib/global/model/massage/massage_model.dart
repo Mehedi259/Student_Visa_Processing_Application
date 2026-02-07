@@ -22,8 +22,9 @@ class MessageResponse {
   factory MessageResponse.fromJson(Map<String, dynamic> json) {
     return MessageResponse(
       items: (json['items'] as List?)
-          ?.map((item) => MessageItem.fromJson(item))
-          .toList() ?? [],
+              ?.map((item) => MessageItem.fromJson(item))
+              .toList() ??
+          [],
       pageNumber: json['pageNumber'] ?? 1,
       pageSize: json['pageSize'] ?? 10,
       totalCount: json['totalCount'] ?? 0,
@@ -88,6 +89,24 @@ class MessageItem {
       hideReadDate: json['hideReadDate'] ?? false,
       body: json['body'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'messageId': messageId,
+      'messageDate': messageDate.toIso8601String(),
+      'posterName': posterName,
+      'posterType': posterType,
+      'subject': subject,
+      'bodyS3Path': bodyS3Path,
+      'attachment': attachment,
+      'studentRead': studentRead,
+      'studentReadDate': studentReadDate?.toIso8601String(),
+      'coachRead': coachRead,
+      'coachReadDate': coachReadDate?.toIso8601String(),
+      'hideReadDate': hideReadDate,
+      'body': body,
+    };
   }
 }
 

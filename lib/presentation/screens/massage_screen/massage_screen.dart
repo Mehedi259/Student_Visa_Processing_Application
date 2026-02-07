@@ -5,6 +5,10 @@ import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:shimmer/shimmer.dart';
+import 'dart:io';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../global/controler/massage/massage_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
@@ -23,16 +27,51 @@ class _MessageScreenState extends State<MessageScreen> {
   final ScrollController _scrollController = ScrollController();
 
   bool _isSearchVisible = false;
+  bool _showScrollToBottom = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+
+    // Auto-scroll to bottom after messages load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _scrollToBottom(animated: false);
+      });
+    });
+  }
+
+  void _scrollToBottom({bool animated = true}) {
+    if (_scrollController.hasClients) {
+      if (animated) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      } else {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    }
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    // Show/hide scroll to bottom button
+    if (_scrollController.hasClients) {
+      final isAtBottom = _scrollController.position.pixels >=
+          _scrollController.position.maxScrollExtent - 100;
+
+      if (_showScrollToBottom == isAtBottom) {
+        setState(() {
+          _showScrollToBottom = !isAtBottom;
+        });
+      }
+    }
+
+    // Load more when scrolling UP (to load older messages)
+    if (_scrollController.position.pixels <=
+        _scrollController.position.minScrollExtent + 200) {
       _controller.loadMoreMessages(context: context);
     }
   }
@@ -58,12 +97,18 @@ class _MessageScreenState extends State<MessageScreen> {
       return;
     }
 
-    // Directly send with subject = "Message"
-    _controller.sendMessage(
+    _controller
+        .sendMessage(
       subject: 'Message',
       body: _messageController.text.trim(),
       context: context,
-    );
+    )
+        .then((_) {
+      // Scroll to bottom after sending
+      Future.delayed(const Duration(milliseconds: 300), () {
+        _scrollToBottom();
+      });
+    });
 
     _messageController.clear();
   }
@@ -169,15 +214,111 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Future<void> _downloadAttachment(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
+  Future<void> _openAttachment(String url) async {
+    try {
+      // Show loading indicator
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Could not open attachment'),
+            content: Text('Opening attachment...'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Color(0xFF5B7FBF),
+          ),
+        );
+      }
+
+      final uri = Uri.parse(url);
+
+      // Try different launch modes
+      bool launched = false;
+
+      // Try 1: External Application
+      try {
+        launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } catch (e) {
+        print('External application failed: $e');
+      }
+
+      // Try 2: Platform Default
+      if (!launched) {
+        try {
+          launched = await launchUrl(
+            uri,
+            mode: LaunchMode.platformDefault,
+          );
+        } catch (e) {
+          print('Platform default failed: $e');
+        }
+      }
+
+      // Try 3: Download and open for images
+      if (!launched &&
+          (url.toLowerCase().endsWith('.jpg') ||
+              url.toLowerCase().endsWith('.jpeg') ||
+              url.toLowerCase().endsWith('.png'))) {
+        await _downloadAndOpen(url);
+      } else if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                'Could not open attachment. Please check your browser settings.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _downloadAndOpen(String url) async {
+    try {
+      // Download file
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        final dir = await getTemporaryDirectory();
+        final fileName = url.split('/').last;
+        final file = File('${dir.path}/$fileName');
+
+        await file.writeAsBytes(bytes);
+
+        // Try to open the downloaded file
+        final uri = Uri.file(file.path);
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!launched && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('File downloaded to: ${file.path}'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        throw Exception('Failed to download file');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Download failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -247,57 +388,101 @@ class _MessageScreenState extends State<MessageScreen> {
               ),
             ),
           Expanded(
-            child: Obx(() {
-              if (_controller.isLoading.value && _controller.messages.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
+            child: Stack(
+              children: [
+                Obx(() {
+                  if (_controller.isLoading.value &&
+                      _controller.messages.isEmpty) {
+                    return _buildShimmerLoading();
+                  }
 
-              final messages = _controller.filteredMessages;
+                  final messages = _controller.filteredMessages;
 
-              if (messages.isEmpty) {
-                return const Center(
-                  child: Text('No messages found'),
-                );
-              }
-
-              return RefreshIndicator(
-                onRefresh: () => _controller.loadMessages(
-                  refresh: true,
-                  context: context,
-                ),
-                child: ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: messages.length +
-                      (_controller.isLoadingMore.value ? 1 : 0),
-                  itemBuilder: (context, index) {
-                    if (index == messages.length) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(16),
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-
-                    final message = messages[index];
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: message.isFromStudent
-                          ? _buildUserMessage(
-                        width: width,
-                        message: message,
-                      )
-                          : _buildCoachMessage(
-                        width: width,
-                        message: message,
-                      ),
+                  if (messages.isEmpty) {
+                    return const Center(
+                      child: Text('No messages found'),
                     );
-                  },
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      // Disabled - no reload
+                    },
+                    notificationPredicate: (_) =>
+                        false, // Disable pull to refresh
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      cacheExtent: 500, // Cache more items for smooth scrolling
+                      addAutomaticKeepAlives: true,
+                      itemCount: messages.length +
+                          (_controller.isLoadingMore.value ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        // Show loading at top for older messages
+                        if (index == 0 && _controller.isLoadingMore.value) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(16),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+
+                        final messageIndex =
+                            _controller.isLoadingMore.value ? index - 1 : index;
+
+                        final message = messages[messageIndex];
+
+                        return RepaintBoundary(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: message.isFromStudent
+                                ? _buildUserMessage(
+                                    width: width,
+                                    message: message,
+                                  )
+                                : _buildCoachMessage(
+                                    width: width,
+                                    message: message,
+                                  ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }),
+
+                // Scroll to Bottom Button (WhatsApp style)
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  right: 16,
+                  bottom: _showScrollToBottom ? 16 : -60,
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(30),
+                    child: InkWell(
+                      onTap: () => _scrollToBottom(),
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF5B7FBF),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              );
-            }),
+              ],
+            ),
           ),
           Obx(() {
             if (_controller.selectedFileName.value.isNotEmpty) {
@@ -365,20 +550,31 @@ class _MessageScreenState extends State<MessageScreen> {
               if (message.hasAttachment) ...[
                 const SizedBox(height: 10),
                 GestureDetector(
-                  onTap: () => _downloadAttachment(message.attachment!),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.attach_file, color: Colors.white, size: 16),
-                      SizedBox(width: 4),
-                      Text(
-                        'View Attachment',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.white,
-                          decoration: TextDecoration.underline,
+                  onTap: () => _openAttachment(message.attachment!),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.attach_file, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'View Attachment',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -507,26 +703,79 @@ class _MessageScreenState extends State<MessageScreen> {
               ),
               child: _controller.isSending.value
                   ? const Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                ),
-              )
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      ),
+                    )
                   : IconButton(
-                icon: Assets.images.sendIcon.image(
-                  width: 30,
-                  height: 30,
-                ),
-                onPressed: _sendMessage,
-              ),
+                      icon: Assets.images.sendIcon.image(
+                        width: 30,
+                        height: 30,
+                      ),
+                      onPressed: _sendMessage,
+                    ),
             );
           }),
         ],
       ),
+    );
+  }
+
+  Widget _buildShimmerLoading() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        final isUser = index % 2 == 0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment:
+                isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            children: [
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.7,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: const Radius.circular(20),
+                      topRight: const Radius.circular(20),
+                      bottomLeft: isUser
+                          ? const Radius.circular(20)
+                          : const Radius.circular(6),
+                      bottomRight: isUser
+                          ? const Radius.circular(6)
+                          : const Radius.circular(20),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Shimmer.fromColors(
+                baseColor: Colors.grey.shade300,
+                highlightColor: Colors.grey.shade100,
+                child: Container(
+                  width: 120,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

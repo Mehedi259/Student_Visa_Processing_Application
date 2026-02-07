@@ -51,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(99),
                   child: studentController.profilePhotoUrl.value.isEmpty
-                      ? Assets.images.profilepicture.image(width: 60, height: 60, fit: BoxFit.cover)
+                      ? Assets.images.abdullahAlJunaid.image(width: 60, height: 60, fit: BoxFit.cover)
                       : CachedNetworkImage(
                     imageUrl: studentController.profilePhotoUrl.value,
                     width: 60,
@@ -59,7 +59,7 @@ class SettingsScreen extends StatelessWidget {
                     fit: BoxFit.cover,
                     placeholder: (context, url) => const CircularProgressIndicator(),
                     errorWidget: (context, url, error) =>
-                        Assets.images.profilepicture.image(width: 60, height: 60, fit: BoxFit.cover),
+                        Assets.images.abdullahAlJunaid.image(width: 60, height: 60, fit: BoxFit.cover),
                   ),
                 ),
                 const SizedBox(width: 10),

@@ -61,12 +61,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     ever(controller.dashboardData, (_) {
       _updateAnimations();
     });
+
+    // If data already exists, trigger animation immediately
+    if (controller.dashboardData.value != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateAnimations();
+      });
+    }
   }
 
   void _updateAnimations() {
     if (controller.dashboardData.value != null) {
-      final legalPercentage = controller.dashboardData.value!.legalEntryGauge.percentage / 100;
-      final ticketingPercentage = controller.dashboardData.value!.ticketingGauge.percentage / 100;
+      final legalPercentage =
+          controller.dashboardData.value!.legalEntryGauge.percentage / 100;
+      final ticketingPercentage =
+          controller.dashboardData.value!.ticketingGauge.percentage / 100;
 
       _legalEntryAnimation = Tween<double>(
         begin: 0.0,
@@ -106,7 +115,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Obx(() {
-        if (controller.isLoading.value && controller.dashboardData.value == null) {
+        if (controller.isLoading.value &&
+            controller.dashboardData.value == null) {
           return const Center(
             child: CircularProgressIndicator(
               color: Color(0xFF375BA4),
@@ -171,9 +181,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   width: 24,
                                   height: 24,
                                 ),
-                                onPressed: () => context.go(RoutePath.notification.addBasePath),
+                                onPressed: () => context
+                                    .go(RoutePath.notification.addBasePath),
                               ),
-                              if (dashboard != null && dashboard.unreadMessages > 0)
+                              if (dashboard != null &&
+                                  dashboard.unreadMessages > 0)
                                 Positioned(
                                   right: 8,
                                   top: 8,
@@ -241,9 +253,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 20),
 
                     /// DEADLINE CARD
-                    if (dashboard != null && dashboard.documentDeadline.isNotEmpty)
+                    if (dashboard != null &&
+                        dashboard.documentDeadline.isNotEmpty)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFE8E8),
                           borderRadius: BorderRadius.circular(12),
@@ -311,9 +325,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 ),
                               ],
                             ),
-
                             const SizedBox(height: 16),
-
                             if (dashboard.unreadMessages > 0)
                               Row(
                                 children: [
@@ -325,7 +337,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                   ),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 4),
                                     decoration: const BoxDecoration(
                                       color: Colors.red,
                                       shape: BoxShape.circle,
@@ -356,14 +369,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   color: Colors.grey.shade700,
                                 ),
                               ),
-
                             const SizedBox(height: 20),
-
                             SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
-                                onPressed: () => context.push(RoutePath.massageScreen.addBasePath),
+                                onPressed: () => context
+                                    .push(RoutePath.massageScreen.addBasePath),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF5B7FBF),
                                   foregroundColor: Colors.white,
@@ -449,7 +461,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ),
           const SizedBox(width: 20),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

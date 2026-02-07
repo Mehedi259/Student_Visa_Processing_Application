@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/massage/massage_model.dart';
 import '../../service/massage/massage_service.dart';
+import '../../storage/message_storage_helper.dart';
 
 class MessageController extends GetxController {
   // Observable Variables
@@ -23,6 +24,7 @@ class MessageController extends GetxController {
 
   // Search
   final searchQuery = ''.obs;
+  Worker? _searchDebounce;
 
   // Selected File
   Rx<File?> selectedFile = Rx<File?>(null);
@@ -35,13 +37,41 @@ class MessageController extends GetxController {
   void onInit() {
     super.onInit();
     loadMessages();
+
+    // Debounce search for better performance
+    _searchDebounce = debounce(
+      searchQuery,
+      (_) {}, // Search is handled by filteredMessages getter
+      time: const Duration(milliseconds: 300),
+    );
+  }
+
+  @override
+  void onClose() {
+    _searchDebounce?.dispose();
+    super.onClose();
   }
 
   /// Load Messages (Initial or Refresh)
-  Future<void> loadMessages({bool refresh = false, BuildContext? context}) async {
+  Future<void> loadMessages(
+      {bool refresh = false, BuildContext? context}) async {
     if (refresh) {
       currentPage.value = 1;
       messages.clear();
+    }
+
+    // Load from cache first for instant display
+    if (!refresh && messages.isEmpty) {
+      final cachedMessages = await MessageStorageHelper.getCachedMessages();
+      if (cachedMessages.isNotEmpty) {
+        messages.value = cachedMessages;
+
+        // Check if cache is still valid
+        final isCacheValid = await MessageStorageHelper.isCacheValid();
+        if (isCacheValid) {
+          return; // Use cache, don't fetch from API
+        }
+      }
     }
 
     isLoading.value = true;
@@ -52,32 +82,20 @@ class MessageController extends GetxController {
       );
 
       if (refresh) {
-        messages.value = response.items;
+        // Reverse the items so newest messages are at the bottom
+        messages.value = response.items.reversed.toList();
       } else {
-        messages.addAll(response.items);
+        // Add reversed items to existing messages
+        messages.value = response.items.reversed.toList();
       }
+
+      // Save to local storage
+      await MessageStorageHelper.saveMessages(messages);
 
       totalPages.value = response.totalPages;
       hasNextPage.value = response.hasNextPage;
-
-      if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Messages loaded successfully'),
-            duration: Duration(seconds: 2),
-            backgroundColor: Color(0xFF5B7FBF),
-          ),
-        );
-      }
     } catch (e) {
-      if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load messages: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      if (context != null && context.mounted) {}
     } finally {
       isLoading.value = false;
     }
@@ -95,7 +113,8 @@ class MessageController extends GetxController {
         pageNumber: currentPage.value,
       );
 
-      messages.addAll(response.items);
+      // Insert older messages at the beginning (reversed order)
+      messages.insertAll(0, response.items.reversed.toList());
       hasNextPage.value = response.hasNextPage;
     } catch (e) {
       if (context != null && context.mounted) {
@@ -141,15 +160,6 @@ class MessageController extends GetxController {
       );
 
       if (success) {
-        if (context != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Message sent successfully'),
-              backgroundColor: Color(0xFF5B7FBF),
-            ),
-          );
-        }
-
         // Clear attachment
         clearAttachment();
 
@@ -160,7 +170,7 @@ class MessageController extends GetxController {
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to send message: $e'),
+            content: Text('Failed to send message'),
             backgroundColor: Colors.red,
           ),
         );
@@ -199,7 +209,7 @@ class MessageController extends GetxController {
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick image: $e'),
+            content: Text('Failed to pick image'),
             backgroundColor: Colors.red,
           ),
         );
@@ -239,7 +249,7 @@ class MessageController extends GetxController {
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to pick file: $e'),
+            content: Text('Failed to pick file'),
             backgroundColor: Colors.red,
           ),
         );

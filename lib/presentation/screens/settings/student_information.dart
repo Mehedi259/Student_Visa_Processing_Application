@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../global/controler/settings/student_information_controler.dart';
 
@@ -38,28 +40,18 @@ class StudentInformationScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Profile Photo
+              // Profile Photo with proper image handling
               GestureDetector(
                 onTap: controller.pickProfilePhoto,
                 child: Stack(
                   children: [
-                    CircleAvatar(
+                    Obx(() => CircleAvatar(
                       radius: 60,
                       backgroundColor: Colors.blue.shade200,
                       child: ClipOval(
-                        child: controller.profilePhotoUrl.value.isEmpty
-                            ? Assets.images.profilepicture.image(width: 120, height: 120, fit: BoxFit.cover)
-                            : CachedNetworkImage(
-                          imageUrl: controller.profilePhotoUrl.value,
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) => const CircularProgressIndicator(),
-                          errorWidget: (context, url, error) =>
-                              Assets.images.profilepicture.image(width: 120, height: 120, fit: BoxFit.cover),
-                        ),
+                        child: _buildProfileImage(controller),
                       ),
-                    ),
+                    )),
                     Positioned(
                       bottom: 0,
                       right: 0,
@@ -93,12 +85,12 @@ class StudentInformationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              _buildDropdownField(
+              Obx(() => _buildDropdownField(
                 label: 'Gender',
                 value: controller.selectedGender.value,
                 items: const ['Male', 'Female', 'Non-binary'],
                 onChanged: (value) => controller.selectedGender.value = value!,
-              ),
+              )),
               const SizedBox(height: 20),
 
               _buildTextField(
@@ -113,12 +105,12 @@ class StudentInformationScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              _buildDropdownField(
+              Obx(() => _buildDropdownField(
                 label: 'Pronouns',
                 value: controller.selectedPronoun.value,
                 items: const ['She / Her', 'He / Him', 'They / Them', 'Prefer not to say'],
                 onChanged: (value) => controller.selectedPronoun.value = value!,
-              ),
+              )),
               const SizedBox(height: 40),
 
               SizedBox(
@@ -139,6 +131,47 @@ class StudentInformationScreen extends StatelessWidget {
         );
       }),
     );
+  }
+
+  // Build profile image widget with proper handling for web and mobile
+  Widget _buildProfileImage(StudentInformationController controller) {
+    // If user picked a new photo
+    if (controller.hasNewPhoto.value) {
+      if (kIsWeb && controller.webProfilePhoto.value != null) {
+        // Web: Display from memory bytes
+        return Image.memory(
+          controller.webProfilePhoto.value!,
+          width: 120,
+          height: 120,
+          fit: BoxFit.cover,
+        );
+      } else if (!kIsWeb && controller.profilePhotoFile.value != null) {
+        // Mobile: Display from file
+        return Image.file(
+          controller.profilePhotoFile.value!,
+          width: 120,
+          height: 120,
+          fit: BoxFit.cover,
+        );
+      }
+    }
+
+    // Display existing profile photo from URL
+    if (controller.profilePhotoUrl.value.isNotEmpty &&
+        controller.profilePhotoUrl.value.startsWith('http')) {
+      return CachedNetworkImage(
+        imageUrl: controller.profilePhotoUrl.value,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => const CircularProgressIndicator(),
+        errorWidget: (context, url, error) =>
+            Assets.images.abdullahAlJunaid.image(width: 120, height: 120, fit: BoxFit.cover),
+      );
+    }
+
+    // Default placeholder image
+    return Assets.images.abdullahAlJunaid.image(width: 120, height: 120, fit: BoxFit.cover);
   }
 
   Widget _buildTextField({
