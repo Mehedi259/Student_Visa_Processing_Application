@@ -22,8 +22,8 @@ class PassportScannerScreen extends StatefulWidget {
 
   const PassportScannerScreen({
     super.key,
-    this.documentTitle = 'Passport',
-    this.documentDescription = 'Get final certificate as soon as your final grades for the...',
+    this.documentTitle = '',
+    this.documentDescription = '',
   });
 
   @override

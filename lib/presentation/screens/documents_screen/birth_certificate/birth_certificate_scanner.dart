@@ -14,8 +14,8 @@ class BirthCertificateScanner extends StatefulWidget {
 
   const BirthCertificateScanner({
     super.key,
-    this.documentTitle = 'College Certificate',
-    this.documentDescription = 'Get final certificate as soon as your final grades for the...',
+    this.documentTitle = '',
+    this.documentDescription = '',
   });
 
   @override

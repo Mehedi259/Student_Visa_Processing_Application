@@ -22,9 +22,9 @@ class CollegeCertificateScanner extends StatefulWidget {
 
   const CollegeCertificateScanner({
     super.key,
-    this.documentTitle = 'College Certificate',
+    this.documentTitle = '',
     this.documentDescription =
-    'Get final certificate as soon as your final grades for the...',
+    '',
   });
 
   @override

@@ -14,8 +14,8 @@ class CollegeTranscriptScanner extends StatefulWidget {
 
   const CollegeTranscriptScanner({
     super.key,
-    this.documentTitle = 'College Transcript',
-    this.documentDescription = 'Get final Transcript as soon as your final grades for the...',
+    this.documentTitle = '',
+    this.documentDescription = '',
   });
 
   @override

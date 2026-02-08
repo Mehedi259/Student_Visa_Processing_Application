@@ -14,8 +14,8 @@ class HealthInsuranceScanner extends StatefulWidget {
 
   const HealthInsuranceScanner({
     super.key,
-    this.documentTitle = 'School Acceptance Letters',
-    this.documentDescription = 'Get final School Acceptance Letters as soon as your final grades for the...',
+    this.documentTitle = '',
+    this.documentDescription = '',
   });
 
   @override

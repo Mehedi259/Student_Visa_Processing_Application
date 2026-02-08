@@ -22,9 +22,9 @@ class SchoolAcceptanceScanner extends StatefulWidget {
 
   const SchoolAcceptanceScanner({
     super.key,
-    this.documentTitle = 'School Acceptance Letters',
+    this.documentTitle = '',
     this.documentDescription =
-    'Get final School Acceptance Letters as soon as your final grades for the...',
+    '',
   });
 
   @override
