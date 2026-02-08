@@ -36,9 +36,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
         title: const Text(
           'Documents',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontFamily: 'Nunito Sans',
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF1D1B20),
           ),
         ),

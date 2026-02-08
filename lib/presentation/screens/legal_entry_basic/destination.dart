@@ -33,8 +33,9 @@ class _DestinationScreenState extends State<DestinationScreen> {
           'Legal Entry Basics',
           style: TextStyle(
             fontSize: 20,
+            fontFamily: 'Nunito Sans',
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Color(0xFF1D1B20),
           ),
         ),
         backgroundColor: Colors.white,

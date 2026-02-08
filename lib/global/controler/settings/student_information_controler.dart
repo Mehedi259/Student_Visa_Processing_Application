@@ -135,7 +135,8 @@ class StudentInformationController extends GetxController {
 
     if (picked != null) {
       // Format: YYYY-MM-DD
-      dobController.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      dobController.text =
+          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
     }
   }
 
@@ -144,50 +145,90 @@ class StudentInformationController extends GetxController {
     try {
       isLoading.value = true;
 
-      final fields = {
-        'preferredName': preferredNameController.text,
-        'dateOfBirth': dobController.text,
-        'gender': selectedGender.value,
-        'parentLegalGuardianOneName': guardian1Controller.text,
-        'parentLegalGuardianTwoName': guardian2Controller.text,
-        'pronouns': selectedPronoun.value,
-      };
+      // Only include fields that have values
+      final fields = <String, String>{};
+
+      if (preferredNameController.text.isNotEmpty) {
+        fields['preferredName'] = preferredNameController.text.trim();
+      }
+      if (dobController.text.isNotEmpty) {
+        fields['dateOfBirth'] = dobController.text.trim();
+      }
+      if (selectedGender.value.isNotEmpty) {
+        fields['gender'] = selectedGender.value;
+      }
+      if (guardian1Controller.text.isNotEmpty) {
+        fields['parentLegalGuardianOneName'] = guardian1Controller.text.trim();
+      }
+      if (guardian2Controller.text.isNotEmpty) {
+        fields['parentLegalGuardianTwoName'] = guardian2Controller.text.trim();
+      }
+      if (selectedPronoun.value.isNotEmpty) {
+        fields['pronouns'] = selectedPronoun.value;
+      }
+
+      // Check if there's anything to update
+      final hasFieldChanges = fields.isNotEmpty;
+      final hasPhotoChange = hasNewPhoto.value &&
+          (profilePhotoFile.value != null || webProfilePhoto.value != null);
+
+      if (!hasFieldChanges && !hasPhotoChange) {
+        if (Get.context != null) {
+          Get.snackbar(
+            'Info',
+            'No changes to update',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+          );
+        }
+        return;
+      }
 
       final success = await StudentInformationService.updateStudentInformation(
         fields: fields,
-        profilePhoto: profilePhotoFile.value,
-        webProfilePhoto: webProfilePhoto.value,
+        profilePhoto: hasNewPhoto.value ? profilePhotoFile.value : null,
+        webProfilePhoto: hasNewPhoto.value ? webProfilePhoto.value : null,
       );
 
       if (success) {
-        Get.snackbar(
-          'Success',
-          'Profile updated successfully',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
+        hasNewPhoto.value = false; // Reset after successful update
+
+        if (Get.context != null) {
+          Get.snackbar(
+            'Success',
+            'Profile updated successfully',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 2),
+          );
+        }
 
         // Reload data to get updated profile photo URL
         await loadStudentInformation();
       } else {
+        if (Get.context != null) {
+          Get.snackbar(
+            'Error',
+            'Failed to update profile',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error updating profile: $e');
+      if (Get.context != null) {
         Get.snackbar(
           'Error',
-          'Failed to update profile',
+          'An error occurred while updating profile',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red,
           colorText: Colors.white,
         );
       }
-    } catch (e) {
-      debugPrint('❌ Error updating profile: $e');
-      Get.snackbar(
-        'Error',
-        'An error occurred: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-      );
     } finally {
       isLoading.value = false;
     }

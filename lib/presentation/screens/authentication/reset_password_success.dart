@@ -23,9 +23,7 @@ class PasswordResetSuccessScreen extends StatelessWidget {
               // Back Button
               GestureDetector(
                 onTap: () {
-                  // Navigate to login
-                  // context.go('/login');
-                  Navigator.of(context).pop();
+                  context.go(RoutePath.forgetPassword.addBasePath);
                 },
                 child: Assets.images.backIcon.image(
                   width: 44,

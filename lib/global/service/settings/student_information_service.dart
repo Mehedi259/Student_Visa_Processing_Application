@@ -10,7 +10,8 @@ class StudentInformationService {
   // Get Student Information
   static Future<StudentInformationModel?> getStudentInformation() async {
     try {
-      final response = await ApiService.getRequest(ApiConstants.studentInformation);
+      final response =
+          await ApiService.getRequest(ApiConstants.studentInformation);
       if (response != null) {
         return StudentInformationModel.fromJson(response);
       }
@@ -28,16 +29,31 @@ class StudentInformationService {
     Uint8List? webProfilePhoto,
   }) async {
     try {
+      // Check if there's anything to update
+      final hasFields = fields.isNotEmpty;
+      final hasPhoto = (!kIsWeb && profilePhoto != null) ||
+          (kIsWeb && webProfilePhoto != null);
+
+      if (!hasFields && !hasPhoto) {
+        debugPrint('⚠️ No data to update');
+        return false;
+      }
+
       Map<String, File>? files;
       Map<String, Uint8List>? webFiles;
 
       if (!kIsWeb && profilePhoto != null) {
         files = {'profilePhotoUrl': profilePhoto};
+        debugPrint('📤 Uploading profile photo (mobile): ${profilePhoto.path}');
       }
 
       if (kIsWeb && webProfilePhoto != null) {
         webFiles = {'profilePhotoUrl': webProfilePhoto};
+        debugPrint(
+            '📤 Uploading profile photo (web): ${webProfilePhoto.length} bytes');
       }
+
+      debugPrint('📤 Updating fields: ${fields.keys.join(", ")}');
 
       await ApiService.patchMultipartRequest(
         ApiConstants.studentInformation,
@@ -45,9 +61,11 @@ class StudentInformationService {
         files: files,
         webFiles: webFiles,
       );
+
+      debugPrint('✅ Student information updated successfully');
       return true;
     } catch (e) {
-      debugPrint('Error updating student information: $e');
+      debugPrint('❌ Error updating student information: $e');
       return false;
     }
   }

@@ -123,7 +123,7 @@ class StudentInformationScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Edit profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],

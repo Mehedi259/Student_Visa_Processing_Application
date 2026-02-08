@@ -337,12 +337,13 @@ class _MessageScreenState extends State<MessageScreen> {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Message Board',
           style: TextStyle(
-            fontSize: 18 * font,
+            fontSize: 20,
+            fontFamily: 'Nunito Sans',
             fontWeight: FontWeight.w600,
-            color: Colors.black,
+            color: Color(0xFF1D1B20),
           ),
         ),
         backgroundColor: Colors.white,

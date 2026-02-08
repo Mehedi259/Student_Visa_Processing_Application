@@ -34,118 +34,152 @@ class SettingsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Obx(() => Column(
-        children: [
-          const SizedBox(height: 24),
+      body: Obx(() => RefreshIndicator(
+            onRefresh: () async {
+              await studentController.loadStudentInformation();
+            },
+            color: const Color(0xFF375BA4),
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height -
+                      MediaQuery.of(context).padding.top -
+                      kToolbarHeight -
+                      kBottomNavigationBarHeight,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 24),
 
-          // Profile Section
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F5F7),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(99),
-                  child: studentController.profilePhotoUrl.value.isEmpty
-                      ? Assets.images.abdullahAlJunaid.image(width: 60, height: 60, fit: BoxFit.cover)
-                      : CachedNetworkImage(
-                    imageUrl: studentController.profilePhotoUrl.value,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const CircularProgressIndicator(),
-                    errorWidget: (context, url, error) =>
-                        Assets.images.abdullahAlJunaid.image(width: 60, height: 60, fit: BoxFit.cover),
+                      // Profile Section
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 13, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF5F5F7),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(99),
+                              child: studentController
+                                      .profilePhotoUrl.value.isEmpty
+                                  ? Assets.images.abdullahAlJunaid.image(
+                                      width: 60, height: 60, fit: BoxFit.cover)
+                                  : CachedNetworkImage(
+                                      imageUrl: studentController
+                                          .profilePhotoUrl.value,
+                                      width: 60,
+                                      height: 60,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) =>
+                                          const CircularProgressIndicator(),
+                                      errorWidget: (context, url, error) =>
+                                          Assets.images.abdullahAlJunaid.image(
+                                              width: 60,
+                                              height: 60,
+                                              fit: BoxFit.cover),
+                                    ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              studentController
+                                      .preferredNameController.text.isEmpty
+                                  ? 'Student Name'
+                                  : studentController
+                                      .preferredNameController.text,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1D1B20),
+                                fontFamily: 'Nunito Sans',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        height: 0.5,
+                        color: const Color(0xFFC7C7C7),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.myInformation,
+                        title: 'My Information',
+                        onTap: () =>
+                            context.go(RoutePath.myInformation.addBasePath),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
+                        height: 0.5,
+                        color: const Color(0xFFC7C7C7),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.tecnicalSupport,
+                        title: 'Technical Support',
+                        onTap: () =>
+                            context.go(RoutePath.technicalSupport.addBasePath),
+                      ),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.privacyPolicy,
+                        title: 'Privacy Policy',
+                        onTap: () =>
+                            context.go(RoutePath.privacyPolicy.addBasePath),
+                      ),
+
+                      const Spacer(),
+
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: OutlinedButton(
+                          onPressed: () => _showLogoutDialog(context),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 44),
+                            side: const BorderSide(
+                                color: Color(0xFF375BA4), width: 1),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          child: const Text(
+                            'Logout',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF375BA4),
+                              fontFamily: 'Roboto',
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  studentController.preferredNameController.text.isEmpty
-                      ? 'Student Name'
-                      : studentController.preferredNameController.text,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D1B20),
-                    fontFamily: 'Nunito Sans',
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            height: 0.5,
-            color: const Color(0xFFC7C7C7),
-          ),
-
-          const SizedBox(height: 18),
-
-          _buildSettingOption(
-            context: context,
-            icon: Assets.images.myInformation,
-            title: 'My Information',
-            onTap: () => context.go(RoutePath.myInformation.addBasePath),
-          ),
-
-          const SizedBox(height: 8),
-
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            height: 0.5,
-            color: const Color(0xFFC7C7C7),
-          ),
-
-          const SizedBox(height: 18),
-
-          _buildSettingOption(
-            context: context,
-            icon: Assets.images.tecnicalSupport,
-            title: 'Technical Support',
-            onTap: () => context.go(RoutePath.technicalSupport.addBasePath),
-          ),
-
-          _buildSettingOption(
-            context: context,
-            icon: Assets.images.privacyPolicy,
-            title: 'Privacy Policy',
-            onTap: () => context.go(RoutePath.privacyPolicy.addBasePath),
-          ),
-
-          const Spacer(),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: OutlinedButton(
-              onPressed: () => _showLogoutDialog(context),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 44),
-                side: const BorderSide(color: Color(0xFF375BA4), width: 1),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF375BA4),
-                  fontFamily: 'Roboto',
-                ),
               ),
             ),
-          ),
-
-          const SizedBox(height: 16),
-        ],
-      )),
+          )),
       bottomNavigationBar: const CustomNavBar(currentIndex: 4),
     );
   }
@@ -192,7 +226,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             'Logout',
             style: TextStyle(
