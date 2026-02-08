@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import '../../../../../core/custom_assets/assets.gen.dart';
 import '../../../../../global/controler/documents/documents_controler.dart';
 
-
 class RequirementsTab extends StatelessWidget {
   final double horizontalPadding;
 
@@ -58,11 +57,18 @@ class RequirementsTab extends StatelessWidget {
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF5F5F7),
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(10),
+                    height: 40,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F7),
+                      border: Border.all(
+                        color: const Color(0xFFC7C7C7),
+                        width: 0.5,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
                       ),
                     ),
                     child: Row(
@@ -78,21 +84,32 @@ class RequirementsTab extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
+                            color: Color(0xFF1D1B20),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  ...detail.requirements.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final requirement = entry.value;
-                    final isLast = index == detail.requirements.length - 1;
-
-                    return _buildRequirementItem(
-                      requirement,
-                      isLast: isLast,
-                    );
-                  }).toList(),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Container(
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color(0xFFC7C7C7),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Column(
+                        children:
+                            detail.requirements.asMap().entries.map((entry) {
+                          final requirement = entry.value;
+                          return _buildRequirementItem(requirement);
+                        }).toList(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -105,38 +122,24 @@ class RequirementsTab extends StatelessWidget {
 
   Widget _buildRequirementItem(String text, {bool isLast = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        border: isLast
-            ? null
-            : const Border(
-          bottom: BorderSide(color: Color(0xFFC7C7C7)),
+        border: Border.all(
+          color: const Color(0xFFC7C7C7),
+          width: 1,
         ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 4),
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: Color(0xFF375BA4),
-              shape: BoxShape.circle,
-            ),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12,
+            height: 1.30,
+            color: Color(0xFF1D1B20),
+            fontWeight: FontWeight.w400,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                fontSize: 13,
-                height: 1.4,
-                color: Color(0xFF1D1B20),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
