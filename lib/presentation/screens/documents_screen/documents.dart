@@ -9,7 +9,6 @@ import '../../../global/controler/documents/documents_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 
-
 enum DocumentStatus { complete, incomplete, warning }
 
 class DocumentsScreen extends StatefulWidget {
@@ -133,6 +132,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     total: dashboard.countryDocuments.total,
                     status: _getStatus(dashboard.countryDocuments.status),
                     isCountryFlag: true,
+                    countryFlagUrl: dashboard.countryFlagUrl,
                   ),
                   const SizedBox(height: 100),
                 ],
@@ -169,6 +169,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     required DocumentStatus status,
     required VoidCallback onTap,
     bool isCountryFlag = false,
+    String? countryFlagUrl,
   }) {
     ImageProvider? statusImage;
     double statusIconSize = 20;
@@ -209,14 +210,52 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                 shape: BoxShape.circle,
               ),
               child: Center(
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: Image(
-                    image: iconImage,
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                child: isCountryFlag &&
+                        countryFlagUrl != null &&
+                        countryFlagUrl.isNotEmpty
+                    ? ClipOval(
+                        child: Image.network(
+                          countryFlagUrl,
+                          width: 24,
+                          height: 24,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Image(
+                                image: iconImage,
+                                fit: BoxFit.contain,
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Center(
+                                child: SizedBox(
+                                  width: 12,
+                                  height: 12,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Color(0xFF375BA4),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Image(
+                          image: iconImage,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 14),
