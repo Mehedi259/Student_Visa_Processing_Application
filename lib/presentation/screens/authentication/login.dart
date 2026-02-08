@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../global/controler/auth/login_controler.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -63,22 +64,12 @@ class _LoginScreenState extends State<LoginScreen> {
         await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not open registration page'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          SnackbarUtils.showError(context, 'Could not open registration page');
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error: $e');
       }
     }
   }

@@ -5,6 +5,7 @@ import 'package:iywt/core/routes/routes.dart';
 
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -313,12 +314,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         if (_formKey.currentState!.validate()) {
                           // Handle password reset
                           context.go(RoutePath.resetPasswordSuccess.addBasePath);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Password reset successfully!'),
-                              backgroundColor: Color(0xFF375BA4),
-                            ),
-                          );
+                          SnackbarUtils.showSuccess(context, 'Password reset successfully!');
                         }
                       }
                           : null,

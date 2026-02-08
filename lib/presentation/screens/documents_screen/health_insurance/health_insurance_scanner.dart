@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/custom_assets/assets.gen.dart';
 import '../../../../core/routes/route_path.dart';
+import '../../../../global/utils/snackbar_utils.dart';
 
 class HealthInsuranceScanner extends StatefulWidget {
   final String documentTitle;
@@ -99,12 +100,7 @@ class _HealthInsuranceScannerState extends State<HealthInsuranceScanner> {
     } catch (e) {
       if (mounted) {
         setState(() => _isScanning = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error scanning document: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error scanning document: $e');
         _navigateBack();
       }
     }
@@ -385,20 +381,13 @@ class _HealthInsuranceScannerState extends State<HealthInsuranceScanner> {
 
   Future<void> _saveDocument() async {
     if (_scannedPages.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No pages to save')),
-      );
+      SnackbarUtils.showInfo(context, 'No pages to save');
       return;
     }
 
     Navigator.pop(context);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Saved ${_scannedPages.length} page(s) successfully!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    SnackbarUtils.showSuccess(context, 'Saved ${_scannedPages.length} page(s) successfully!');
 
     await Future.delayed(const Duration(milliseconds: 400));
 

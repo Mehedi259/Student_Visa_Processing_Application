@@ -6,6 +6,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key});
@@ -50,12 +51,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     if (_canResend) {
       // Handle resend OTP logic here
       _startTimer();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('OTP resent successfully'),
-          backgroundColor: Color(0xFF375BA4),
-        ),
-      );
+      SnackbarUtils.showSuccess(context, 'OTP resent successfully');
     }
   }
 

@@ -15,6 +15,7 @@ import 'dart:developer' as developer;
 import '../../../../core/custom_assets/assets.gen.dart';
 import '../../../../core/routes/route_path.dart';
 import '../../../../global/controler/documents/documents_controler.dart';
+import '../../../../global/utils/snackbar_utils.dart';
 
 class PassportScannerScreen extends StatefulWidget {
   final String documentTitle;
@@ -79,17 +80,17 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
 
       if (Platform.isAndroid) {
         pictures = await CunningDocumentScanner.getPictures(
-          noOfPages: 10,
-          isGalleryImportAllowed: true,
-        ) ??
+              noOfPages: 10,
+              isGalleryImportAllowed: true,
+            ) ??
             [];
       } else if (Platform.isIOS) {
         pictures = await CunningDocumentScanner.getPictures(
-          iosScannerOptions: IosScannerOptions(
-            imageFormat: IosImageFormat.jpg,
-            jpgCompressionQuality: 0.9,
-          ),
-        ) ??
+              iosScannerOptions: IosScannerOptions(
+                imageFormat: IosImageFormat.jpg,
+                jpgCompressionQuality: 0.9,
+              ),
+            ) ??
             [];
       } else {
         pictures = await CunningDocumentScanner.getPictures() ?? [];
@@ -110,12 +111,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isScanning = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error scanning document: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error scanning document: $e');
         _navigateBack();
       }
     }
@@ -263,7 +259,8 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
             child: Icon(icon, color: Colors.white, size: 28),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(color: Colors.white, fontSize: 12)),
+          Text(label,
+              style: const TextStyle(color: Colors.white, fontSize: 12)),
         ],
       ),
     );
@@ -277,17 +274,17 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
 
       if (Platform.isAndroid) {
         newPictures = await CunningDocumentScanner.getPictures(
-          noOfPages: 10,
-          isGalleryImportAllowed: true,
-        ) ??
+              noOfPages: 10,
+              isGalleryImportAllowed: true,
+            ) ??
             [];
       } else if (Platform.isIOS) {
         newPictures = await CunningDocumentScanner.getPictures(
-          iosScannerOptions: IosScannerOptions(
-            imageFormat: IosImageFormat.jpg,
-            jpgCompressionQuality: 0.9,
-          ),
-        ) ??
+              iosScannerOptions: IosScannerOptions(
+                imageFormat: IosImageFormat.jpg,
+                jpgCompressionQuality: 0.9,
+              ),
+            ) ??
             [];
       }
 
@@ -330,7 +327,8 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
                       const Expanded(
                         child: Text('Preview',
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.white, fontSize: 18)),
+                            style:
+                                TextStyle(color: Colors.white, fontSize: 18)),
                       ),
                       const SizedBox(width: 48)
                     ],
@@ -402,9 +400,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
     if (_scannedPages.isEmpty) {
       developer.log('❌ No pages to upload', name: 'PassportScanner');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No pages to upload')),
-        );
+        SnackbarUtils.showInfo(context, 'No pages to upload');
       }
       return;
     }
@@ -416,12 +412,8 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
     if (documentId.isEmpty) {
       developer.log('❌ No document ID found', name: 'PassportScanner');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No document selected. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(
+            context, 'No document selected. Please try again.');
       }
       return;
     }
@@ -515,12 +507,9 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
       developer.log('Upload result: $success', name: 'PassportScanner');
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Uploaded ${_scannedPages.length} page(s) as PDF successfully!'),
-            backgroundColor: Colors.green,
-          ),
+        SnackbarUtils.showSuccess(
+          context,
+          'Uploaded ${_scannedPages.length} page(s) as PDF successfully!',
         );
 
         await Future.delayed(const Duration(milliseconds: 400));
@@ -538,12 +527,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating PDF: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error creating PDF: $e');
       }
     }
   }
@@ -553,7 +537,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
 
     try {
       final List<XFile> files =
-      _scannedPages.map((path) => XFile(path)).toList();
+          _scannedPages.map((path) => XFile(path)).toList();
 
       await Share.shareXFiles(
         files,
@@ -591,52 +575,52 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
           padding: const EdgeInsets.symmetric(vertical: 50),
           child: _isScanning
               ? Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const CircularProgressIndicator(color: Color(0xFF5B7FBF)),
-              const SizedBox(height: 20),
-              Text(
-                'Opening Scanner...',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              ),
-            ],
-          )
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const CircularProgressIndicator(color: Color(0xFF5B7FBF)),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Opening Scanner...',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                    ),
+                  ],
+                )
               : Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.document_scanner,
-                size: 80,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Scanner Ready',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.document_scanner,
+                      size: 80,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Scanner Ready',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Position your document and tap scan',
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    ),
+                    const SizedBox(height: 32),
+                    ElevatedButton.icon(
+                      onPressed: _startScanning,
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text('Start Scanning'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5B7FBF),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 16),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Position your document and tap scan',
-                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: _startScanning,
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Start Scanning'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5B7FBF),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 32, vertical: 16),
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

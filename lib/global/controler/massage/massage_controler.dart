@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../model/massage/massage_model.dart';
 import '../../service/massage/massage_service.dart';
 import '../../storage/message_storage_helper.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class MessageController extends GetxController {
   // Observable Variables
@@ -118,12 +119,7 @@ class MessageController extends GetxController {
       hasNextPage.value = response.hasNextPage;
     } catch (e) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load more messages'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Failed to load more messages');
       }
       currentPage.value--;
     } finally {
@@ -139,12 +135,7 @@ class MessageController extends GetxController {
   }) async {
     if (subject.trim().isEmpty || body.trim().isEmpty) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Subject and message cannot be empty'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        SnackbarUtils.showInfo(context, 'Subject and message cannot be empty');
       }
       return;
     }
@@ -168,12 +159,7 @@ class MessageController extends GetxController {
       }
     } catch (e) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send message'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Failed to send message');
       }
     } finally {
       isSending.value = false;
@@ -197,22 +183,15 @@ class MessageController extends GetxController {
         }
 
         if (context != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Image selected: ${selectedFileName.value}'),
-              backgroundColor: const Color(0xFF5B7FBF),
-            ),
+          SnackbarUtils.showInfo(
+            context,
+            'Image selected: ${selectedFileName.value}',
           );
         }
       }
     } catch (e) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to pick image'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Failed to pick image');
       }
     }
   }
@@ -237,22 +216,15 @@ class MessageController extends GetxController {
         }
 
         if (context != null && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('File selected: ${selectedFileName.value}'),
-              backgroundColor: const Color(0xFF5B7FBF),
-            ),
+          SnackbarUtils.showInfo(
+            context,
+            'File selected: ${selectedFileName.value}',
           );
         }
       }
     } catch (e) {
       if (context != null && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to pick file'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Failed to pick file');
       }
     }
   }

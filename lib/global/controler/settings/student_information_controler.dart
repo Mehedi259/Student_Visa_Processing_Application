@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/settings/student_information_model.dart';
 import '../../service/settings/student_information_service.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class StudentInformationController extends GetxController {
   final isLoading = false.obs;

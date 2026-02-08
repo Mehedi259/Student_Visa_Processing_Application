@@ -10,6 +10,7 @@ import '../../../core/routes/route_path.dart';
 import '../../../global/controler/settings/student_information_controler.dart';
 import '../../../global/storage/storage_helper.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -285,13 +286,7 @@ class SettingsScreen extends StatelessWidget {
 
                 // Show success message
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Logged out successfully'),
-                      backgroundColor: Color(0xFF375BA4),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
+                  SnackbarUtils.showSuccess(context, 'Logged out successfully');
                 }
 
                 print("✅ Logout successful - Token cleared");

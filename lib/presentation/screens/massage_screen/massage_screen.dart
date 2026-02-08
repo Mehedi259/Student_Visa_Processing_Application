@@ -12,6 +12,7 @@ import 'dart:io';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../global/controler/massage/massage_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
@@ -87,7 +88,6 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _sendMessage() {
-
     _controller
         .sendMessage(
       subject: 'Message',
@@ -209,13 +209,7 @@ class _MessageScreenState extends State<MessageScreen> {
     try {
       // Show loading indicator
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Opening attachment...'),
-            duration: Duration(seconds: 1),
-            backgroundColor: Color(0xFF5B7FBF),
-          ),
-        );
+        SnackbarUtils.showInfo(context, 'Opening attachment...');
       }
 
       final uri = Uri.parse(url);
@@ -252,23 +246,14 @@ class _MessageScreenState extends State<MessageScreen> {
               url.toLowerCase().endsWith('.png'))) {
         await _downloadAndOpen(url);
       } else if (!launched && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-                'Could not open attachment. Please check your browser settings.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
+        SnackbarUtils.showError(
+          context,
+          'Could not open attachment. Please check your browser settings.',
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error: $e');
       }
     }
   }
@@ -294,12 +279,9 @@ class _MessageScreenState extends State<MessageScreen> {
         );
 
         if (!launched && mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('File downloaded to: ${file.path}'),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 3),
-            ),
+          SnackbarUtils.showWarning(
+            context,
+            'File downloaded to: ${file.path}',
           );
         }
       } else {
@@ -307,12 +289,7 @@ class _MessageScreenState extends State<MessageScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Download failed: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Download failed: $e');
       }
     }
   }

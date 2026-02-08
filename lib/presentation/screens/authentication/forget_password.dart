@@ -7,6 +7,7 @@ import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
 import '../../../core/routes/routes.dart';
 import '../../../global/controler/auth/forget_password_controler.dart';
+import '../../../global/utils/snackbar_utils.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -45,12 +46,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       if (success) {
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_controller.successMessage ?? 'Password reset link sent to your email!'),
-            backgroundColor: const Color(0xFF375BA4),
-            duration: const Duration(seconds: 3),
-          ),
+        SnackbarUtils.showSuccess(
+          context,
+          _controller.successMessage ??
+              'Password reset link sent to your email!',
         );
 
         // Navigate back to login after delay
@@ -61,12 +60,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         });
       } else {
         // Show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_controller.errorMessage ?? 'Failed to send reset email'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
+        SnackbarUtils.showError(
+          context,
+          _controller.errorMessage ?? 'Failed to send reset email',
         );
       }
     }
@@ -211,7 +207,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         child: ElevatedButton(
                           onPressed: controller.isLoading
                               ? null
-                              : (_isButtonEnabled ? _handleResetPassword : null),
+                              : (_isButtonEnabled
+                                  ? _handleResetPassword
+                                  : null),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF375BA4),
                             disabledBackgroundColor: const Color(0x7F375BA4),
@@ -228,23 +226,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           ),
                           child: controller.isLoading
                               ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Color(0xFFFDFDFD),
-                              ),
-                            ),
-                          )
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFFDFDFD),
+                                    ),
+                                  ),
+                                )
                               : const Text(
-                            'Reset Password',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: -0.50,
-                            ),
-                          ),
+                                  'Reset Password',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.50,
+                                  ),
+                                ),
                         ),
                       );
                     },

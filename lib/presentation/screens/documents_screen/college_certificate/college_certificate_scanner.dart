@@ -15,6 +15,7 @@ import 'dart:developer' as developer;
 import '../../../../core/custom_assets/assets.gen.dart';
 import '../../../../core/routes/route_path.dart';
 import '../../../../global/controler/documents/documents_controler.dart';
+import '../../../../global/utils/snackbar_utils.dart';
 
 class CollegeCertificateScanner extends StatefulWidget {
   final String documentTitle;
@@ -112,12 +113,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
     } catch (e) {
       if (mounted) {
         setState(() => _isScanning = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error scanning document: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error scanning document: $e');
         _navigateBack();
       }
     }
@@ -406,9 +402,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
     if (_scannedPages.isEmpty) {
       developer.log('❌ No pages to upload', name: 'CollegeCertificateScanner');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No pages to upload')),
-        );
+        SnackbarUtils.showInfo(context, 'No pages to upload');
       }
       return;
     }
@@ -420,12 +414,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
     if (documentId.isEmpty) {
       developer.log('❌ No document ID found', name: 'CollegeCertificateScanner');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No document selected. Please try again.'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'No document selected. Please try again.');
       }
       return;
     }
@@ -522,12 +511,9 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
           name: 'CollegeCertificateScanner');
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Uploaded ${_scannedPages.length} page(s) as PDF successfully!'),
-            backgroundColor: Colors.green,
-          ),
+        SnackbarUtils.showSuccess(
+          context,
+          'Uploaded \${_scannedPages.length} page(s) as PDF successfully!',
         );
 
         await Future.delayed(const Duration(milliseconds: 400));
@@ -545,12 +531,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
       }
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error creating PDF: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackbarUtils.showError(context, 'Error creating PDF: $e');
       }
     }
   }
