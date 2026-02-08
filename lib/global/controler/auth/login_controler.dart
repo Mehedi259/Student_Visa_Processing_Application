@@ -53,7 +53,8 @@ class LoginController extends GetxController {
         rememberMe.value = await StorageHelper.getRememberMe();
       }
 
-      developer.log('🔐 Biometric available: $canCheck', name: 'LoginController');
+      developer.log('🔐 Biometric available: $canCheck',
+          name: 'LoginController');
     } catch (e) {
       developer.log('❌ Error checking biometric: $e', name: 'LoginController');
       canUseBiometric.value = false;
@@ -121,8 +122,8 @@ class LoginController extends GetxController {
     try {
       // Check if device supports biometric
       final canAuthenticateWithBiometrics = await _localAuth.canCheckBiometrics;
-      final canAuthenticate = canAuthenticateWithBiometrics ||
-          await _localAuth.isDeviceSupported();
+      final canAuthenticate =
+          canAuthenticateWithBiometrics || await _localAuth.isDeviceSupported();
 
       if (!canAuthenticate) {
         _showSnackBar('Biometric not supported on this device', isError: true);
@@ -137,8 +138,10 @@ class LoginController extends GetxController {
         return;
       }
 
-      developer.log('🔐 Starting biometric authentication', name: 'LoginController');
-      developer.log('📱 Available biometrics: $availableBiometrics', name: 'LoginController');
+      developer.log('🔐 Starting biometric authentication',
+          name: 'LoginController');
+      developer.log('📱 Available biometrics: $availableBiometrics',
+          name: 'LoginController');
 
       // Authenticate
       final bool authenticated = await _localAuth.authenticate(
@@ -150,11 +153,32 @@ class LoginController extends GetxController {
       );
 
       if (authenticated) {
-        developer.log('✅ Biometric authentication successful', name: 'LoginController');
+        developer.log('✅ Biometric authentication successful',
+            name: 'LoginController');
 
-        // Check if token exists
-        final token = await StorageHelper.getToken();
-        if (token != null && token.isNotEmpty) {
+        // Check if refresh token exists
+        final refreshToken = await StorageHelper.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty) {
+          _showSnackBar('Session expired. Please login again.', isError: true);
+          canUseBiometric.value = false;
+          await StorageHelper.clearRememberMe();
+          return;
+        }
+
+        // Show loading state
+        isLoading.value = true;
+
+        developer.log('🔄 Refreshing access token with refresh token',
+            name: 'LoginController');
+
+        // Call refresh token API to get new access token
+        final result = await LoginService.refreshAccessToken();
+
+        isLoading.value = false;
+
+        if (result['success'] == true) {
+          developer.log('✅ Access token refreshed successfully',
+              name: 'LoginController');
           _showSnackBar('Login successful!', isError: false);
 
           await Future.delayed(const Duration(milliseconds: 500));
@@ -163,16 +187,23 @@ class LoginController extends GetxController {
             _context!.go('/home');
           }
         } else {
-          _showSnackBar('Session expired. Please login again.', isError: true);
+          developer.log('❌ Token refresh failed: ${result['error']}',
+              name: 'LoginController');
+          _showSnackBar(
+            result['error'] ?? 'Session expired. Please login again.',
+            isError: true,
+          );
           canUseBiometric.value = false;
           await StorageHelper.clearRememberMe();
         }
       } else {
-        developer.log('❌ Biometric authentication failed', name: 'LoginController');
+        developer.log('❌ Biometric authentication failed',
+            name: 'LoginController');
         _showSnackBar('Authentication failed', isError: true);
       }
     } on PlatformException catch (e) {
-      developer.log('❌ Biometric error: ${e.code} - ${e.message}', name: 'LoginController');
+      developer.log('❌ Biometric error: ${e.code} - ${e.message}',
+          name: 'LoginController');
 
       if (e.code == 'NotAvailable') {
         _showSnackBar('Biometric not available', isError: true);
@@ -188,6 +219,8 @@ class LoginController extends GetxController {
     } catch (e) {
       developer.log('❌ Biometric error: $e', name: 'LoginController');
       _showSnackBar('An error occurred', isError: true);
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -226,7 +259,8 @@ class LoginController extends GetxController {
           _context!.go('/home');
         }
       } else {
-        developer.log('❌ Login failed: ${result['error']}', name: 'LoginController');
+        developer.log('❌ Login failed: ${result['error']}',
+            name: 'LoginController');
         _showSnackBar(
           result['error'] ?? 'Invalid credentials',
           isError: true,

@@ -87,15 +87,6 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Message cannot be empty'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
 
     _controller
         .sendMessage(
