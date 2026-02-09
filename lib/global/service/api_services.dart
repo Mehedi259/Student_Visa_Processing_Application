@@ -11,7 +11,6 @@ import '../storage/storage_helper.dart';
 
 class ApiService {
   static bool _isRefreshing = false;
-  static List<Function> _requestQueue = [];
 
   /// POST Request with auto token refresh
   static Future<dynamic> postRequest(String endpoint,
@@ -143,38 +142,67 @@ class ApiService {
       final token = await StorageHelper.getToken();
       final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint");
 
+      developer.log('📤 PATCH Multipart Request to: $uri', name: 'ApiService');
+
       var request = http.MultipartRequest('PATCH', uri);
 
       final cleaned = token?.trim() ?? "";
       if (cleaned.isNotEmpty) {
         request.headers['Authorization'] = 'Bearer $cleaned';
+        developer.log('🔑 Authorization header added', name: 'ApiService');
       }
 
-      if (fields != null) {
+      if (fields != null && fields.isNotEmpty) {
         request.fields.addAll(fields);
+        developer.log('📦 Fields: $fields', name: 'ApiService');
       }
 
-      if (!kIsWeb && files != null) {
+      if (!kIsWeb && files != null && files.isNotEmpty) {
         for (var entry in files.entries) {
-          final file =
-              await http.MultipartFile.fromPath(entry.key, entry.value.path);
-          request.files.add(file);
+          try {
+            // Generate unique filename with timestamp
+            final timestamp = DateTime.now().millisecondsSinceEpoch;
+            final extension = entry.value.path.split('.').last;
+            final uniqueFilename = 'profile_$timestamp.$extension';
+            
+            final file = await http.MultipartFile.fromPath(
+              entry.key,
+              entry.value.path,
+              filename: uniqueFilename,
+            );
+            request.files.add(file);
+            developer.log('📎 File attached: ${entry.key} = $uniqueFilename (${file.length} bytes)', 
+                name: 'ApiService');
+          } catch (e) {
+            developer.log('❌ Error attaching file ${entry.key}: $e', 
+                name: 'ApiService');
+            throw Exception('Failed to attach file: $e');
+          }
         }
       }
 
-      if (kIsWeb && webFiles != null) {
+      if (kIsWeb && webFiles != null && webFiles.isNotEmpty) {
         for (var entry in webFiles.entries) {
+          // Generate unique filename with timestamp
+          final timestamp = DateTime.now().millisecondsSinceEpoch;
           final file = http.MultipartFile.fromBytes(
             entry.key,
             entry.value,
-            filename: 'uploaded_file.jpg',
+            filename: 'profile_$timestamp.jpg',
           );
           request.files.add(file);
+          developer.log('📎 Web file attached: ${entry.key} (${entry.value.length} bytes)', 
+              name: 'ApiService');
         }
       }
 
+      developer.log('🚀 Sending multipart request...', name: 'ApiService');
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+
+      developer.log('📥 Response Status: ${response.statusCode}',
+          name: 'ApiService');
+      developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
 
       return processResponse(response);
     } catch (e) {

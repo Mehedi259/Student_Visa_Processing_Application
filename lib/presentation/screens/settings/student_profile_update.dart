@@ -1,17 +1,16 @@
-// lib/presentation/screens/settings/student_information.dart
+// lib/presentation/screens/settings/student_profile_update.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../../../core/custom_assets/assets.gen.dart';
-import '../../../core/routes/route_path.dart';
-import '../../../core/routes/routes.dart';
 import '../../../global/controler/settings/student_information_controler.dart';
 
-class StudentInformationScreen extends StatelessWidget {
-  const StudentInformationScreen({super.key});
+class StudentProfileUpdateScreen extends StatelessWidget {
+  const StudentProfileUpdateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,10 +23,10 @@ class StudentInformationScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Assets.images.backIcon.image(width: 44, height: 44),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
-          'Student Information',
+          'Edit Profile',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.black),
         ),
         centerTitle: true,
@@ -41,31 +40,39 @@ class StudentInformationScreen extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Profile Photo - Read only (no tap action)
-              Stack(
-                children: [
-                  Obx(() {
-                    return CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.blue.shade200,
-                      child: ClipOval(
-                        child: _buildProfileImage(controller),
+              // Profile Photo with tap to change
+              GestureDetector(
+                onTap: controller.pickProfilePhoto,
+                child: Stack(
+                  children: [
+                    Obx(() {
+                      return CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.blue.shade200,
+                        child: ClipOval(
+                          child: _buildProfileImage(controller),
+                        ),
+                      );
+                    }),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF5B7FBF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Assets.images.camera.image(width: 20, height: 20),
                       ),
-                    );
-                  }),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Assets.images.camera.image(width: 20, height: 20),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Tap to change photo',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 30),
 
@@ -73,7 +80,6 @@ class StudentInformationScreen extends StatelessWidget {
                 label: 'Preferred Name',
                 controller: controller.preferredNameController,
                 maxLength: 18,
-                readOnly: true,
               ),
               const SizedBox(height: 20),
 
@@ -82,6 +88,7 @@ class StudentInformationScreen extends StatelessWidget {
                 controller: controller.dobController,
                 suffixIcon: Assets.images.dateOfBirthIcon,
                 readOnly: true,
+                onTap: () => controller.selectDateOfBirth(context),
               ),
               const SizedBox(height: 20),
 
@@ -89,21 +96,19 @@ class StudentInformationScreen extends StatelessWidget {
                 label: 'Gender',
                 value: controller.selectedGender.value,
                 items: const ['Male', 'Female', 'Non-binary'],
-                enabled: false,
+                onChanged: (value) => controller.selectedGender.value = value!,
               )),
               const SizedBox(height: 20),
 
               _buildTextField(
                 label: 'Parent / Legal Guardian 1',
                 controller: controller.guardian1Controller,
-                readOnly: true,
               ),
               const SizedBox(height: 20),
 
               _buildTextField(
                 label: 'Parent / Legal Guardian 2',
                 controller: controller.guardian2Controller,
-                readOnly: true,
               ),
               const SizedBox(height: 20),
 
@@ -111,25 +116,28 @@ class StudentInformationScreen extends StatelessWidget {
                 label: 'Pronouns',
                 value: controller.selectedPronoun.value,
                 items: const ['She / Her', 'He / Him', 'They / Them', 'Prefer not to say'],
-                enabled: false,
+                onChanged: (value) => controller.selectedPronoun.value = value!,
               )),
               const SizedBox(height: 40),
 
-              // Edit Profile button
+              // Save button with PATCH API
               SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to edit profile screen using GoRouter
-                    context.go(RoutePath.studentProfileUpdate.addBasePath);
+                  onPressed: () async {
+                    await controller.updateProfile();
+                    // Go back after successful update
+                    if (!controller.isLoading.value && context.mounted) {
+                      context.pop();
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF5B7FBF),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Edit Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: const Text('Save Changes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
@@ -139,8 +147,29 @@ class StudentInformationScreen extends StatelessWidget {
     );
   }
 
-  // Build profile image widget - read only
+  // Build profile image widget with proper handling for web and mobile
   Widget _buildProfileImage(StudentInformationController controller) {
+    // If user picked a new photo
+    if (controller.hasNewPhoto.value) {
+      if (kIsWeb && controller.webProfilePhoto.value != null) {
+        // Web: Display from memory bytes
+        return Image.memory(
+          controller.webProfilePhoto.value!,
+          width: 120,
+          height: 120,
+          fit: BoxFit.cover,
+        );
+      } else if (!kIsWeb && controller.profilePhotoFile.value != null) {
+        // Mobile: Display from file
+        return Image.file(
+          controller.profilePhotoFile.value!,
+          width: 120,
+          height: 120,
+          fit: BoxFit.cover,
+        );
+      }
+    }
+
     // Display existing profile photo from URL
     if (controller.profilePhotoUrl.value.isNotEmpty &&
         controller.profilePhotoUrl.value.startsWith('http')) {
@@ -200,7 +229,7 @@ class StudentInformationScreen extends StatelessWidget {
     required String label,
     required String value,
     required List<String> items,
-    bool enabled = true,
+    required ValueChanged<String?> onChanged,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,7 +244,7 @@ class StudentInformationScreen extends StatelessWidget {
             focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF5B7FBF))),
           ),
           items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-          onChanged: enabled ? (value) {} : null, // Disabled if enabled is false
+          onChanged: onChanged,
         ),
       ],
     );

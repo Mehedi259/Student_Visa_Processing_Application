@@ -49,6 +49,7 @@ class RoutePath {
   static const String settings = 'settings';
   static const String myInformation = 'myInformation';
   static const String studentInformation = 'studentInformation';
+  static const String studentProfileUpdate = 'studentProfileUpdate';
   static const String address = 'address';
   static const String addAddress = 'addAddress';
   static const String email = 'email';

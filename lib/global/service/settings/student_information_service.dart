@@ -43,8 +43,19 @@ class StudentInformationService {
       Map<String, Uint8List>? webFiles;
 
       if (!kIsWeb && profilePhoto != null) {
-        files = {'profilePhotoUrl': profilePhoto};
-        debugPrint('📤 Uploading profile photo (mobile): ${profilePhoto.path}');
+        // Check if file exists
+        final fileExists = await profilePhoto.exists();
+        debugPrint('📂 File exists: $fileExists');
+        
+        if (fileExists) {
+          final fileSize = await profilePhoto.length();
+          debugPrint('📏 File size: $fileSize bytes');
+          files = {'profilePhotoUrl': profilePhoto};
+          debugPrint('📤 Uploading profile photo (mobile): ${profilePhoto.path}');
+        } else {
+          debugPrint('❌ File does not exist: ${profilePhoto.path}');
+          return false;
+        }
       }
 
       if (kIsWeb && webProfilePhoto != null) {
@@ -55,7 +66,7 @@ class StudentInformationService {
 
       debugPrint('📤 Updating fields: ${fields.keys.join(", ")}');
 
-      await ApiService.patchMultipartRequest(
+      final response = await ApiService.patchMultipartRequest(
         ApiConstants.studentInformation,
         fields: fields,
         files: files,
@@ -63,7 +74,20 @@ class StudentInformationService {
       );
 
       debugPrint('✅ Student information updated successfully');
+      debugPrint('📥 Server response: $response');
       return true;
+    } on Exception catch (e) {
+      final errorMessage = e.toString();
+      
+      // Check if it's a "no modification" error
+      if (errorMessage.contains('No documents were modified')) {
+        debugPrint('⚠️ No changes detected by server (same data)');
+        // Return true since data is already correct
+        return true;
+      }
+      
+      debugPrint('❌ Error updating student information: $e');
+      return false;
     } catch (e) {
       debugPrint('❌ Error updating student information: $e');
       return false;

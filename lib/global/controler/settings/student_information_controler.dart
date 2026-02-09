@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../model/settings/student_information_model.dart';
 import '../../service/settings/student_information_service.dart';
-import '../../../global/utils/snackbar_utils.dart';
 
 class StudentInformationController extends GetxController {
   final isLoading = false.obs;
@@ -58,7 +57,12 @@ class StudentInformationController extends GetxController {
     selectedGender.value = data.gender ?? 'Male';
     selectedPronoun.value = data.pronouns ?? 'He / Him';
     profilePhotoUrl.value = data.profilePhotoUrl ?? '';
-    hasNewPhoto.value = false; // Reset when loading data
+    
+    // Only reset hasNewPhoto if we're not in the middle of an update
+    // This prevents the flag from being reset after picking a photo
+    if (!isLoading.value) {
+      hasNewPhoto.value = false;
+    }
   }
 
   // Pick profile photo
@@ -70,9 +74,13 @@ class StudentInformationController extends GetxController {
         maxWidth: 1024,
         maxHeight: 1024,
         imageQuality: 85,
+        requestFullMetadata: false, // Avoid metadata issues
       );
 
       if (pickedFile != null) {
+        // Check if user picked the same file from cache
+        final isSameFile = profilePhotoFile.value?.path == pickedFile.path;
+        
         if (kIsWeb) {
           // For web platform
           final bytes = await pickedFile.readAsBytes();
@@ -89,6 +97,13 @@ class StudentInformationController extends GetxController {
         hasNewPhoto.value = true;
 
         debugPrint('📸 Photo picked successfully: ${pickedFile.path}');
+        debugPrint('✅ hasNewPhoto flag set to: ${hasNewPhoto.value}');
+        
+        if (isSameFile) {
+          debugPrint('⚠️ Same photo selected from cache');
+        }
+      } else {
+        debugPrint('❌ No photo selected');
       }
     } catch (e) {
       debugPrint('❌ Error picking photo: $e');
@@ -108,7 +123,21 @@ class StudentInformationController extends GetxController {
     DateTime initialDate = DateTime(2000);
     if (dobController.text.isNotEmpty) {
       try {
-        initialDate = DateTime.parse(dobController.text);
+        // Try parsing "DD MMM YYYY" format first
+        final parts = dobController.text.split(' ');
+        if (parts.length == 3) {
+          final day = int.parse(parts[0]);
+          final monthMap = {
+            'JAN': 1, 'FEB': 2, 'MAR': 3, 'APR': 4, 'MAY': 5, 'JUN': 6,
+            'JUL': 7, 'AUG': 8, 'SEP': 9, 'OCT': 10, 'NOV': 11, 'DEC': 12
+          };
+          final month = monthMap[parts[1].toUpperCase()] ?? 1;
+          final year = int.parse(parts[2]);
+          initialDate = DateTime(year, month, day);
+        } else {
+          // Try standard parsing
+          initialDate = DateTime.parse(dobController.text);
+        }
       } catch (e) {
         // If parsing fails, use default
         initialDate = DateTime(2000);
@@ -135,9 +164,11 @@ class StudentInformationController extends GetxController {
     );
 
     if (picked != null) {
-      // Format: YYYY-MM-DD
+      // Format: DD MMM YYYY (to match API format)
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       dobController.text =
-          "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+          "${picked.day.toString().padLeft(2, '0')} ${months[picked.month - 1]} ${picked.year}";
     }
   }
 
@@ -146,34 +177,59 @@ class StudentInformationController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Only include fields that have values
-      final fields = <String, String>{};
-
-      if (preferredNameController.text.isNotEmpty) {
-        fields['preferredName'] = preferredNameController.text.trim();
-      }
-      if (dobController.text.isNotEmpty) {
-        fields['dateOfBirth'] = dobController.text.trim();
-      }
-      if (selectedGender.value.isNotEmpty) {
-        fields['gender'] = selectedGender.value;
-      }
-      if (guardian1Controller.text.isNotEmpty) {
-        fields['parentLegalGuardianOneName'] = guardian1Controller.text.trim();
-      }
-      if (guardian2Controller.text.isNotEmpty) {
-        fields['parentLegalGuardianTwoName'] = guardian2Controller.text.trim();
-      }
-      if (selectedPronoun.value.isNotEmpty) {
-        fields['pronouns'] = selectedPronoun.value;
-      }
-
-      // Check if there's anything to update
-      final hasFieldChanges = fields.isNotEmpty;
+      // Check what has changed
       final hasPhotoChange = hasNewPhoto.value &&
           (profilePhotoFile.value != null || webProfilePhoto.value != null);
 
-      if (!hasFieldChanges && !hasPhotoChange) {
+      // Only include fields that have actually changed
+      final fields = <String, String>{};
+      
+      // Compare with original data to detect changes
+      final originalData = studentInfo.value;
+      
+      if (originalData != null) {
+        if (preferredNameController.text.trim() != (originalData.preferredName ?? '')) {
+          fields['preferredName'] = preferredNameController.text.trim();
+        }
+        if (dobController.text.trim() != (originalData.dateOfBirth ?? '')) {
+          fields['dateOfBirth'] = dobController.text.trim();
+        }
+        if (selectedGender.value != (originalData.gender ?? '')) {
+          fields['gender'] = selectedGender.value;
+        }
+        if (guardian1Controller.text.trim() != (originalData.parentLegalGuardianOneName ?? '')) {
+          fields['parentLegalGuardianOneName'] = guardian1Controller.text.trim();
+        }
+        if (guardian2Controller.text.trim() != (originalData.parentLegalGuardianTwoName ?? '')) {
+          fields['parentLegalGuardianTwoName'] = guardian2Controller.text.trim();
+        }
+        if (selectedPronoun.value != (originalData.pronouns ?? '')) {
+          fields['pronouns'] = selectedPronoun.value;
+        }
+      } else {
+        // If no original data, include all non-empty fields
+        if (preferredNameController.text.isNotEmpty) {
+          fields['preferredName'] = preferredNameController.text.trim();
+        }
+        if (dobController.text.isNotEmpty) {
+          fields['dateOfBirth'] = dobController.text.trim();
+        }
+        if (selectedGender.value.isNotEmpty) {
+          fields['gender'] = selectedGender.value;
+        }
+        if (guardian1Controller.text.isNotEmpty) {
+          fields['parentLegalGuardianOneName'] = guardian1Controller.text.trim();
+        }
+        if (guardian2Controller.text.isNotEmpty) {
+          fields['parentLegalGuardianTwoName'] = guardian2Controller.text.trim();
+        }
+        if (selectedPronoun.value.isNotEmpty) {
+          fields['pronouns'] = selectedPronoun.value;
+        }
+      }
+
+      // Check if there's anything to update
+      if (fields.isEmpty && !hasPhotoChange) {
         if (Get.context != null) {
           Get.snackbar(
             'Info',
@@ -186,6 +242,9 @@ class StudentInformationController extends GetxController {
         return;
       }
 
+      debugPrint('📝 Changed fields: ${fields.keys.join(", ")}');
+      debugPrint('📸 Photo changed: $hasPhotoChange');
+
       final success = await StudentInformationService.updateStudentInformation(
         fields: fields,
         profilePhoto: hasNewPhoto.value ? profilePhotoFile.value : null,
@@ -193,8 +252,6 @@ class StudentInformationController extends GetxController {
       );
 
       if (success) {
-        hasNewPhoto.value = false; // Reset after successful update
-
         if (Get.context != null) {
           Get.snackbar(
             'Success',
@@ -206,13 +263,16 @@ class StudentInformationController extends GetxController {
           );
         }
 
+        // Reset photo flag before reloading
+        hasNewPhoto.value = false;
+
         // Reload data to get updated profile photo URL
         await loadStudentInformation();
       } else {
         if (Get.context != null) {
           Get.snackbar(
             'Error',
-            'Failed to update profile',
+            'Failed to update profile. Please try again.',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red,
             colorText: Colors.white,

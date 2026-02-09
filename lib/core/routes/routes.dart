@@ -1,6 +1,5 @@
 // lib/core/routes/routes.dart
 
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../presentation/screens/authentication/forget_password.dart';
@@ -31,6 +30,7 @@ import '../../presentation/screens/notification/notification.dart';
 import '../../presentation/screens/settings/settings.dart';
 import '../../presentation/screens/settings/my_information.dart';
 import '../../presentation/screens/settings/student_information.dart';
+import '../../presentation/screens/settings/student_profile_update.dart';
 import '../../presentation/screens/settings/address.dart';
 import '../../presentation/screens/settings/add_address.dart';
 import '../../presentation/screens/settings/email.dart';
@@ -202,6 +202,11 @@ class AppRouter {
         name: RoutePath.studentInformation,
         path: RoutePath.studentInformation.addBasePath,
         builder: (context, state) => const StudentInformationScreen(),
+      ),
+      GoRoute(
+        name: RoutePath.studentProfileUpdate,
+        path: RoutePath.studentProfileUpdate.addBasePath,
+        builder: (context, state) => const StudentProfileUpdateScreen(),
       ),
       GoRoute(
         name: RoutePath.address,
