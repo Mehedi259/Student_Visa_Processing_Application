@@ -14,6 +14,55 @@ import '../../../global/controler/massage/massage_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
 import '../../../global/utils/snackbar_utils.dart';
 
+/// Bubble color config by posterType
+class _BubbleStyle {
+  final Color backgroundColor;
+  final Color textColor;
+  final bool isRightAligned;
+
+  const _BubbleStyle({
+    required this.backgroundColor,
+    required this.textColor,
+    required this.isRightAligned,
+  });
+}
+
+_BubbleStyle _getBubbleStyle(String posterType) {
+  switch (posterType.toLowerCase()) {
+    case 'student':
+      return const _BubbleStyle(
+        backgroundColor: Color(0xFF375BA4),
+        textColor: Colors.white,
+        isRightAligned: true,
+      );
+    case 'coach':
+      return const _BubbleStyle(
+        backgroundColor: Color(0xFFF5F5F7),
+        textColor: Color(0xFF1D1B20),
+        isRightAligned: false,
+      );
+    case 'organizationmember':
+    default:
+      return const _BubbleStyle(
+        backgroundColor: Color(0xFF00D148),
+        textColor: Color(0xFFFDFDFD),
+        isRightAligned: false,
+      );
+  }
+}
+
+
+String _formatPosterLabel(String posterName, String posterType) {
+  switch (posterType.toLowerCase()) {
+    case 'coach':
+      return '$posterName - Coach';
+    case 'organizationmember':
+      return '$posterName - Organization';
+    default:
+      return posterName;
+  }
+}
+
 class MessageScreen extends StatefulWidget {
   const MessageScreen({super.key});
 
@@ -30,12 +79,13 @@ class _MessageScreenState extends State<MessageScreen> {
   bool _isSearchVisible = false;
   bool _showScrollToBottom = false;
 
+  // ─── Lifecycle ────────────────────────────────────────────────────────────
+
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
 
-    // Auto-scroll to bottom after messages load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(milliseconds: 300), () {
         _scrollToBottom(animated: false);
@@ -43,39 +93,45 @@ class _MessageScreenState extends State<MessageScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _searchController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // ─── Scroll helpers ───────────────────────────────────────────────────────
+
   void _scrollToBottom({bool animated = true}) {
-    if (_scrollController.hasClients) {
-      if (animated) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      } else {
-        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
-      }
+    if (!_scrollController.hasClients) return;
+    final target = _scrollController.position.maxScrollExtent;
+    if (animated) {
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _scrollController.jumpTo(target);
     }
   }
 
   void _onScroll() {
-    // Show/hide scroll to bottom button
-    if (_scrollController.hasClients) {
-      final isAtBottom = _scrollController.position.pixels >=
-          _scrollController.position.maxScrollExtent - 100;
+    if (!_scrollController.hasClients) return;
+    final pos = _scrollController.position;
 
-      if (_showScrollToBottom == isAtBottom) {
-        setState(() {
-          _showScrollToBottom = !isAtBottom;
-        });
-      }
+    final atBottom = pos.pixels >= pos.maxScrollExtent - 100;
+    if (_showScrollToBottom == atBottom) {
+      setState(() => _showScrollToBottom = !atBottom);
     }
 
-    // Load more when scrolling UP (to load older messages)
-    if (_scrollController.position.pixels <=
-        _scrollController.position.minScrollExtent + 200) {
+    if (pos.pixels <= pos.minScrollExtent + 200) {
       _controller.loadMoreMessages(context: context);
     }
   }
+
+  // ─── Search ───────────────────────────────────────────────────────────────
 
   void _toggleSearch() {
     setState(() {
@@ -87,34 +143,37 @@ class _MessageScreenState extends State<MessageScreen> {
     });
   }
 
+  // ─── Send ─────────────────────────────────────────────────────────────────
+
   void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+
     _controller
         .sendMessage(
       subject: 'Message',
-      body: _messageController.text.trim(),
+      body: text,
       context: context,
     )
-        .then((_) {
-      // Scroll to bottom after sending
-      Future.delayed(const Duration(milliseconds: 300), () {
-        _scrollToBottom();
-      });
-    });
+        .then((_) => Future.delayed(
+      const Duration(milliseconds: 300),
+      _scrollToBottom,
+    ));
 
     _messageController.clear();
   }
+
+  // ─── Attachment dialog ────────────────────────────────────────────────────
 
   void _showAttachmentOptions(BuildContext context) {
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.3),
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          child: _buildAttachmentPopup(context),
-        );
-      },
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: _buildAttachmentPopup(context),
+      ),
     );
   }
 
@@ -149,9 +208,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     width: 24,
                     height: 24,
                     child: Assets.images.uploadImageIcon.image(
-                      width: 24,
-                      height: 24,
-                    ),
+                        width: 24, height: 24),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -182,9 +239,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     width: 24,
                     height: 24,
                     child: Assets.images.uploadAttachmentIcon.image(
-                      width: 24,
-                      height: 24,
-                    ),
+                        width: 24, height: 24),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -205,45 +260,29 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
+  // ─── Open / download attachment ───────────────────────────────────────────
+
   Future<void> _openAttachment(String url) async {
     try {
-      // Show loading indicator
-      if (mounted) {
-        SnackbarUtils.showInfo(context, 'Opening attachment...');
-      }
-
+      if (mounted) SnackbarUtils.showInfo(context, 'Opening attachment...');
       final uri = Uri.parse(url);
-
-      // Try different launch modes
       bool launched = false;
 
-      // Try 1: External Application
       try {
-        launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-      } catch (e) {
-        print('External application failed: $e');
-      }
+        launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } catch (_) {}
 
-      // Try 2: Platform Default
       if (!launched) {
         try {
-          launched = await launchUrl(
-            uri,
-            mode: LaunchMode.platformDefault,
-          );
-        } catch (e) {
-          print('Platform default failed: $e');
-        }
+          launched = await launchUrl(uri, mode: LaunchMode.platformDefault);
+        } catch (_) {}
       }
 
-      // Try 3: Download and open for images
+      final lower = url.toLowerCase();
       if (!launched &&
-          (url.toLowerCase().endsWith('.jpg') ||
-              url.toLowerCase().endsWith('.jpeg') ||
-              url.toLowerCase().endsWith('.png'))) {
+          (lower.endsWith('.jpg') ||
+              lower.endsWith('.jpeg') ||
+              lower.endsWith('.png'))) {
         await _downloadAndOpen(url);
       } else if (!launched && mounted) {
         SnackbarUtils.showError(
@@ -252,233 +291,52 @@ class _MessageScreenState extends State<MessageScreen> {
         );
       }
     } catch (e) {
-      if (mounted) {
-        SnackbarUtils.showError(context, 'Error: $e');
-      }
+      if (mounted) SnackbarUtils.showError(context, 'Error: $e');
     }
   }
 
   Future<void> _downloadAndOpen(String url) async {
     try {
-      // Download file
       final response = await http.get(Uri.parse(url));
-
       if (response.statusCode == 200) {
-        final bytes = response.bodyBytes;
         final dir = await getTemporaryDirectory();
-        final fileName = url.split('/').last;
-        final file = File('${dir.path}/$fileName');
-
-        await file.writeAsBytes(bytes);
-
-        // Try to open the downloaded file
-        final uri = Uri.file(file.path);
+        final file = File('${dir.path}/${url.split('/').last}');
+        await file.writeAsBytes(response.bodyBytes);
         final launched = await launchUrl(
-          uri,
+          Uri.file(file.path),
           mode: LaunchMode.externalApplication,
         );
-
         if (!launched && mounted) {
           SnackbarUtils.showWarning(
-            context,
-            'File downloaded to: ${file.path}',
-          );
+              context, 'File downloaded to: ${file.path}');
         }
       } else {
         throw Exception('Failed to download file');
       }
     } catch (e) {
-      if (mounted) {
-        SnackbarUtils.showError(context, 'Download failed: $e');
-      }
+      if (mounted) SnackbarUtils.showError(context, 'Download failed: $e');
     }
   }
 
-  String _formatTime(DateTime dateTime) {
-    return DateFormat('dd MMM yyyy @ HH:mm').format(dateTime);
-  }
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  @override
-  void dispose() {
-    _messageController.dispose();
-    _searchController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
+  String _formatTime(DateTime dateTime) =>
+      DateFormat('dd MMM yyyy @ HH:mm').format(dateTime);
+
+  // ─── Build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final font = MediaQuery.of(context).textScaleFactor;
 
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        title: const Text(
-          'Message Board',
-          style: TextStyle(
-            fontSize: 20,
-            fontFamily: 'Nunito Sans',
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1D1B20),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Assets.images.massageBoardSearchIcon.image(
-              width: 24,
-              height: 24,
-            ),
-            onPressed: _toggleSearch,
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: Column(
         children: [
-          if (_isSearchVisible)
-            Container(
-              padding: const EdgeInsets.all(16),
-              color: Colors.white,
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) => _controller.searchMessages(value),
-                decoration: InputDecoration(
-                  hintText: 'Search messages...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                ),
-              ),
-            ),
-          Expanded(
-            child: Stack(
-              children: [
-                Obx(() {
-                  if (_controller.isLoading.value &&
-                      _controller.messages.isEmpty) {
-                    return _buildShimmerLoading();
-                  }
-
-                  final messages = _controller.filteredMessages;
-
-                  if (messages.isEmpty) {
-                    return const Center(
-                      child: Text('No messages found'),
-                    );
-                  }
-
-                  return RefreshIndicator(
-                    onRefresh: () async {
-                      // Disabled - no reload
-                    },
-                    notificationPredicate: (_) =>
-                        false, // Disable pull to refresh
-                    child: ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.all(16),
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      cacheExtent: 500, // Cache more items for smooth scrolling
-                      addAutomaticKeepAlives: true,
-                      itemCount: messages.length +
-                          (_controller.isLoadingMore.value ? 1 : 0),
-                      itemBuilder: (context, index) {
-                        // Show loading at top for older messages
-                        if (index == 0 && _controller.isLoadingMore.value) {
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(16),
-                              child: CircularProgressIndicator(),
-                            ),
-                          );
-                        }
-
-                        final messageIndex =
-                            _controller.isLoadingMore.value ? index - 1 : index;
-
-                        final message = messages[messageIndex];
-
-                        return RepaintBoundary(
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: message.isFromStudent
-                                ? _buildUserMessage(
-                                    width: width,
-                                    message: message,
-                                  )
-                                : _buildCoachMessage(
-                                    width: width,
-                                    message: message,
-                                  ),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                }),
-
-                // Scroll to Bottom Button (WhatsApp style)
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  right: 16,
-                  bottom: _showScrollToBottom ? 16 : -60,
-                  child: Material(
-                    elevation: 4,
-                    borderRadius: BorderRadius.circular(30),
-                    child: InkWell(
-                      onTap: () => _scrollToBottom(),
-                      borderRadius: BorderRadius.circular(30),
-                      child: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF5B7FBF),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: Colors.white,
-                          size: 28,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Obx(() {
-            if (_controller.selectedFileName.value.isNotEmpty) {
-              return Container(
-                padding: const EdgeInsets.all(8),
-                color: Colors.blue.shade50,
-                child: Row(
-                  children: [
-                    const Icon(Icons.attach_file, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _controller.selectedFileName.value,
-                        style: const TextStyle(fontSize: 14),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, size: 20),
-                      onPressed: _controller.clearAttachment,
-                    ),
-                  ],
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          }),
+          _buildSearchBar(),
+          Expanded(child: _buildMessageList(width)),
+          _buildAttachmentPreview(),
           _buildMessageInput(width),
         ],
       ),
@@ -486,9 +344,143 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  Widget _buildUserMessage({
+  // ─── AppBar ───────────────────────────────────────────────────────────────
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      title: const Text(
+        'Message Board',
+        style: TextStyle(
+          fontSize: 20,
+          fontFamily: 'Nunito Sans',
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF1D1B20),
+        ),
+      ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      centerTitle: true,
+      actions: [
+        IconButton(
+          icon: Assets.images.massageBoardSearchIcon.image(
+              width: 24, height: 24),
+          onPressed: _toggleSearch,
+        ),
+      ],
+    );
+  }
+
+  // ─── Search bar ───────────────────────────────────────────────────────────
+
+  Widget _buildSearchBar() {
+    if (!_isSearchVisible) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Colors.white,
+      child: TextField(
+        controller: _searchController,
+        onChanged: _controller.searchMessages,
+        decoration: InputDecoration(
+          hintText: 'Search messages...',
+          prefixIcon: const Icon(Icons.search),
+          border:
+          OutlineInputBorder(borderRadius: BorderRadius.circular(25)),
+          filled: true,
+          fillColor: Colors.grey.shade100,
+        ),
+      ),
+    );
+  }
+
+  // ─── Message list ─────────────────────────────────────────────────────────
+
+  Widget _buildMessageList(double width) {
+    return Stack(
+      children: [
+        Obx(() {
+          if (_controller.isLoading.value && _controller.messages.isEmpty) {
+            return _buildShimmerLoading();
+          }
+
+          final messages = _controller.filteredMessages;
+
+          if (messages.isEmpty) {
+            return const Center(child: Text('No messages found'));
+          }
+
+          return ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.all(16),
+            physics: const AlwaysScrollableScrollPhysics(),
+            cacheExtent: 800,
+            addAutomaticKeepAlives: false,
+            addRepaintBoundaries: true,
+            itemCount: messages.length +
+                (_controller.isLoadingMore.value ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == 0 && _controller.isLoadingMore.value) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              final msgIndex =
+              _controller.isLoadingMore.value ? index - 1 : index;
+              final message = messages[msgIndex];
+              final style = _getBubbleStyle(message.posterType);
+
+              return Padding(
+                key: ValueKey(message.messageId),
+                padding: const EdgeInsets.only(bottom: 16),
+                child: style.isRightAligned
+                    ? _buildRightBubble(
+                    width: width, message: message, style: style)
+                    : _buildLeftBubble(
+                    width: width, message: message, style: style),
+              );
+            },
+          );
+        }),
+
+        // Scroll-to-bottom FAB
+        AnimatedPositioned(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          right: 16,
+          bottom: _showScrollToBottom ? 16 : -60,
+          child: Material(
+            elevation: 4,
+            borderRadius: BorderRadius.circular(30),
+            child: InkWell(
+              onTap: _scrollToBottom,
+              borderRadius: BorderRadius.circular(30),
+              child: Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF5B7FBF),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Right bubble (Student — Blue) ────────────────────────────────────────
+
+  Widget _buildRightBubble({
     required double width,
-    required message,
+    required dynamic message,
+    required _BubbleStyle style,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -496,9 +488,9 @@ class _MessageScreenState extends State<MessageScreen> {
         Container(
           constraints: BoxConstraints(maxWidth: width * 0.75),
           padding: const EdgeInsets.all(14),
-          decoration: const BoxDecoration(
-            color: Color(0xFF5B7FBF),
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: style.backgroundColor,
+            borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
               bottomLeft: Radius.circular(20),
@@ -510,9 +502,9 @@ class _MessageScreenState extends State<MessageScreen> {
             children: [
               HtmlWidget(
                 message.body,
-                textStyle: const TextStyle(
+                textStyle: TextStyle(
                   fontSize: 14,
-                  color: Colors.white,
+                  color: style.textColor,
                   height: 1.4,
                 ),
               ),
@@ -522,9 +514,7 @@ class _MessageScreenState extends State<MessageScreen> {
                   onTap: () => _openAttachment(message.attachment!),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                        horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
@@ -532,7 +522,8 @@ class _MessageScreenState extends State<MessageScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.attach_file, color: Colors.white, size: 16),
+                        Icon(Icons.attach_file,
+                            color: Colors.white, size: 16),
                         SizedBox(width: 4),
                         Text(
                           'View Attachment',
@@ -553,18 +544,18 @@ class _MessageScreenState extends State<MessageScreen> {
         const SizedBox(height: 4),
         Text(
           _formatTime(message.messageDate),
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.grey.shade500,
-          ),
+          style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
         ),
       ],
     );
   }
 
-  Widget _buildCoachMessage({
+  // ─── Left bubble (Coach — Light Grey | OrganizationMember — Green) ────────
+
+  Widget _buildLeftBubble({
     required double width,
-    required message,
+    required dynamic message,
+    required _BubbleStyle style,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,7 +564,7 @@ class _MessageScreenState extends State<MessageScreen> {
           constraints: BoxConstraints(maxWidth: width * 0.75),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: Colors.grey.shade100,
+            color: style.backgroundColor,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(20),
               topRight: Radius.circular(20),
@@ -581,21 +572,57 @@ class _MessageScreenState extends State<MessageScreen> {
               bottomLeft: Radius.circular(6),
             ),
           ),
-          child: HtmlWidget(
-            message.body,
-            textStyle: const TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
-              height: 1.4,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HtmlWidget(
+                message.body,
+                textStyle: TextStyle(
+                  fontSize: 14,
+                  color: style.textColor,
+                  height: 1.4,
+                ),
+              ),
+              if (message.hasAttachment) ...[
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () => _openAttachment(message.attachment!),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.attach_file,
+                            color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          'View Attachment',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
         const SizedBox(height: 4),
+        // ── "Lindsey Heben - Coach" / "Patrick Kelley - Organization" ────────
         Row(
           children: [
             Flexible(
               child: Text(
-                message.posterName,
+                _formatPosterLabel(message.posterName, message.posterType),
                 style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -610,6 +637,39 @@ class _MessageScreenState extends State<MessageScreen> {
       ],
     );
   }
+
+  // ─── Attachment preview strip ─────────────────────────────────────────────
+
+  Widget _buildAttachmentPreview() {
+    return Obx(() {
+      if (_controller.selectedFileName.value.isEmpty) {
+        return const SizedBox.shrink();
+      }
+      return Container(
+        padding: const EdgeInsets.all(8),
+        color: Colors.blue.shade50,
+        child: Row(
+          children: [
+            const Icon(Icons.attach_file, size: 20),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _controller.selectedFileName.value,
+                style: const TextStyle(fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, size: 20),
+              onPressed: _controller.clearAttachment,
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  // ─── Message input row ────────────────────────────────────────────────────
 
   Widget _buildMessageInput(double width) {
     return Container(
@@ -639,6 +699,7 @@ class _MessageScreenState extends State<MessageScreen> {
                     child: TextField(
                       controller: _messageController,
                       onSubmitted: (_) => _sendMessage(),
+                      textInputAction: TextInputAction.send,
                       decoration: InputDecoration(
                         hintText: 'Type your message here...',
                         hintStyle: TextStyle(
@@ -662,50 +723,51 @@ class _MessageScreenState extends State<MessageScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          Obx(() {
-            return Container(
-              width: 48,
-              height: 48,
-              decoration: const BoxDecoration(
-                color: Color(0xFF5B7FBF),
-                shape: BoxShape.circle,
+          Obx(() => Container(
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(
+              color: Color(0xFF5B7FBF),
+              shape: BoxShape.circle,
+            ),
+            child: _controller.isSending.value
+                ? const Center(
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               ),
-              child: _controller.isSending.value
-                  ? const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      ),
-                    )
-                  : IconButton(
-                      icon: Assets.images.sendIcon.image(
-                        width: 30,
-                        height: 30,
-                      ),
-                      onPressed: _sendMessage,
-                    ),
-            );
-          }),
+            )
+                : IconButton(
+              icon: Assets.images.sendIcon.image(
+                width: 30,
+                height: 30,
+              ),
+              onPressed: _sendMessage,
+            ),
+          )),
         ],
       ),
     );
   }
+
+  // ─── Shimmer placeholder ──────────────────────────────────────────────────
 
   Widget _buildShimmerLoading() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: 6,
       itemBuilder: (context, index) {
-        final isUser = index % 2 == 0;
+        final isRight = index % 2 == 0;
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: Column(
-            crossAxisAlignment:
-                isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isRight
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Shimmer.fromColors(
                 baseColor: Colors.grey.shade300,
@@ -718,10 +780,10 @@ class _MessageScreenState extends State<MessageScreen> {
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(20),
                       topRight: const Radius.circular(20),
-                      bottomLeft: isUser
+                      bottomLeft: isRight
                           ? const Radius.circular(20)
                           : const Radius.circular(6),
-                      bottomRight: isUser
+                      bottomRight: isRight
                           ? const Radius.circular(6)
                           : const Radius.circular(20),
                     ),
