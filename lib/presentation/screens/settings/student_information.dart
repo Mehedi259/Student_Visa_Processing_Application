@@ -24,7 +24,7 @@ class StudentInformationScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Assets.images.backIcon.image(width: 44, height: 44),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.go(RoutePath.settings.addBasePath)
         ),
         title: const Text(
           'Student Information',
@@ -129,7 +129,7 @@ class StudentInformationScreen extends StatelessWidget {
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('Edit Profile', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  child: const Text('Edit Student Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 ),
               ),
             ],
