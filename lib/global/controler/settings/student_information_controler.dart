@@ -57,7 +57,7 @@ class StudentInformationController extends GetxController {
     selectedGender.value = data.gender ?? 'Male';
     selectedPronoun.value = data.pronouns ?? 'He / Him';
     profilePhotoUrl.value = data.profilePhotoUrl ?? '';
-    
+
     // Only reset hasNewPhoto if we're not in the middle of an update
     // This prevents the flag from being reset after picking a photo
     if (!isLoading.value) {
@@ -80,7 +80,7 @@ class StudentInformationController extends GetxController {
       if (pickedFile != null) {
         // Check if user picked the same file from cache
         final isSameFile = profilePhotoFile.value?.path == pickedFile.path;
-        
+
         if (kIsWeb) {
           // For web platform
           final bytes = await pickedFile.readAsBytes();
@@ -98,7 +98,7 @@ class StudentInformationController extends GetxController {
 
         debugPrint('📸 Photo picked successfully: ${pickedFile.path}');
         debugPrint('✅ hasNewPhoto flag set to: ${hasNewPhoto.value}');
-        
+
         if (isSameFile) {
           debugPrint('⚠️ Same photo selected from cache');
         }
@@ -165,10 +165,10 @@ class StudentInformationController extends GetxController {
 
     if (picked != null) {
       // Format: DD MMM YYYY (to match API format)
-      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+      const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
                       'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
       dobController.text =
-          "${picked.day.toString().padLeft(2, '0')} ${months[picked.month - 1]} ${picked.year}";
+      "${picked.day.toString().padLeft(2, '0')} ${months[picked.month - 1]} ${picked.year}";
     }
   }
 
@@ -183,10 +183,10 @@ class StudentInformationController extends GetxController {
 
       // Only include fields that have actually changed
       final fields = <String, String>{};
-      
+
       // Compare with original data to detect changes
       final originalData = studentInfo.value;
-      
+
       if (originalData != null) {
         if (preferredNameController.text.trim() != (originalData.preferredName ?? '')) {
           fields['preferredName'] = preferredNameController.text.trim();

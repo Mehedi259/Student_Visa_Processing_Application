@@ -44,14 +44,14 @@ class StudentProfileUpdateService {
 
 
       if (!kIsWeb && profileImageFile != null) {
-        files = {'profilePhotoUrl': profileImageFile};
+        files = {'profilePhoto': profileImageFile};
         developer.log('📎 Mobile image attached: ${profileImageFile.path}',
             name: 'StudentProfileUpdateService');
       }
 
 
       if (kIsWeb && profileImageBytes != null) {
-        webFiles = {'profilePhotoUrl': profileImageBytes};
+        webFiles = {'profilePhoto': profileImageBytes};
         developer.log('📎 Web image attached: ${profileImageBytes.length} bytes',
             name: 'StudentProfileUpdateService');
       }

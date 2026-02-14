@@ -11,7 +11,7 @@ class StudentInformationService {
   static Future<StudentInformationModel?> getStudentInformation() async {
     try {
       final response =
-          await ApiService.getRequest(ApiConstants.studentInformation);
+      await ApiService.getRequest(ApiConstants.studentInformation);
       if (response != null) {
         return StudentInformationModel.fromJson(response);
       }
@@ -46,7 +46,7 @@ class StudentInformationService {
         // Check if file exists
         final fileExists = await profilePhoto.exists();
         debugPrint('📂 File exists: $fileExists');
-        
+
         if (fileExists) {
           final fileSize = await profilePhoto.length();
           debugPrint('📏 File size: $fileSize bytes');
@@ -78,14 +78,14 @@ class StudentInformationService {
       return true;
     } on Exception catch (e) {
       final errorMessage = e.toString();
-      
+
       // Check if it's a "no modification" error
       if (errorMessage.contains('No documents were modified')) {
         debugPrint('⚠️ No changes detected by server (same data)');
         // Return true since data is already correct
         return true;
       }
-      
+
       debugPrint('❌ Error updating student information: $e');
       return false;
     } catch (e) {
