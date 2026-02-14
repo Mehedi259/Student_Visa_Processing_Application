@@ -216,7 +216,7 @@ class _ProfilePhoto extends StatelessWidget {
     );
   }
 
-  // Priority: local file (just picked) > local bytes (web) > network URL
+  // Priority: local file (just picked) > local bytes (web) > direct API URL
   ImageProvider? _resolveImage() {
     if (!kIsWeb && controller.selectedImageFile.value != null) {
       return FileImage(controller.selectedImageFile.value!);
@@ -224,11 +224,9 @@ class _ProfilePhoto extends StatelessWidget {
     if (kIsWeb && controller.selectedImageBytes.value != null) {
       return MemoryImage(controller.selectedImageBytes.value!);
     }
-    final url = controller.networkImageUrl.value;
+    final url = controller.apiProfilePhotoUrl.value;
     if (url != null && url.isNotEmpty) {
-      // The URL already contains a _cb timestamp injected by the controller,
-      // so Flutter's image cache will treat it as a new image each time
-      // the URL changes — no manual eviction needed.
+      // Direct URL from GET API - no caching, no storage
       return NetworkImage(url);
     }
     return null;
@@ -244,7 +242,7 @@ class _ProfilePhoto extends StatelessWidget {
     if (kIsWeb && controller.selectedImageBytes.value != null) {
       return 'web_${controller.selectedImageBytes.value!.length}';
     }
-    return controller.networkImageUrl.value ?? 'no_image';
+    return controller.apiProfilePhotoUrl.value ?? 'no_image';
   }
 
   void _showPickerSheet(BuildContext context) {

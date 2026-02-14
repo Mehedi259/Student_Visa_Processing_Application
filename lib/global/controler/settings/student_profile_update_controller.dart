@@ -31,8 +31,8 @@ class StudentProfileUpdateController extends GetxController {
   final Rx<File?> selectedImageFile = Rx<File?>(null);            // Mobile/Desktop
   final Rx<Uint8List?> selectedImageBytes = Rx<Uint8List?>(null); // Web
 
-  // Network image URL — cache-busted after successful upload
-  final networkImageUrl = RxnString();
+  // Direct API profile photo URL (no caching, no storage)
+  final apiProfilePhotoUrl = RxnString();
 
   // ---------------------------------------------------------------------------
   // Dropdown Options
@@ -85,10 +85,8 @@ class StudentProfileUpdateController extends GetxController {
     guardian2.value = model.parentLegalGuardianTwoName ?? '';
     pronouns.value = _validPronoun(model.pronouns);
 
-    // Always cache-bust on first load so we get the freshest image
-    final url = model.profilePhotoUrl;
-    networkImageUrl.value =
-    (url != null && url.isNotEmpty) ? _addCacheBust(url) : null;
+    // Store direct API URL without any caching
+    apiProfilePhotoUrl.value = model.profilePhotoUrl;
   }
 
   // ---------------------------------------------------------------------------
@@ -161,9 +159,12 @@ class StudentProfileUpdateController extends GetxController {
         profileImageBytes: kIsWeb ? selectedImageBytes.value : null,
       );
 
-      // Force NetworkImage to re-fetch by busting the cache URL
+      // After successful upload, clear local selection and refresh from API
       if (hasNewImage) {
-        _bustNetworkImageCache();
+        selectedImageFile.value = null;
+        selectedImageBytes.value = null;
+        // Re-fetch profile to get updated photo URL from API
+        await fetchStudentProfile();
       }
 
       developer.log('Profile saved successfully',
@@ -178,40 +179,6 @@ class StudentProfileUpdateController extends GetxController {
     } finally {
       isSaving.value = false;
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Cache Busting
-  // ---------------------------------------------------------------------------
-
-  // Strips old _cb param and appends a fresh timestamp so NetworkImage
-  // treats the URL as new and skips Flutter's in-memory image cache.
-  String _addCacheBust(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return url;
-
-    final params = Map<String, String>.from(uri.queryParameters)
-      ..remove('_cb');
-    params['_cb'] = DateTime.now().millisecondsSinceEpoch.toString();
-
-    return uri.replace(queryParameters: params).toString();
-  }
-
-  // Called after a successful upload. Clears the local file selection
-  // and re-points networkImageUrl with a fresh timestamp so the widget
-  // falls back to NetworkImage and fetches the newly uploaded photo.
-  void _bustNetworkImageCache() {
-    // Clear local selection so _ProfilePhoto falls through to NetworkImage
-    selectedImageFile.value = null;
-    selectedImageBytes.value = null;
-
-    final current = networkImageUrl.value;
-    if (current != null && current.isNotEmpty) {
-      networkImageUrl.value = _addCacheBust(current);
-    }
-
-    developer.log('Network image cache busted',
-        name: 'StudentProfileUpdateController');
   }
 
   // ---------------------------------------------------------------------------
