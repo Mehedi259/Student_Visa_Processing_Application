@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
@@ -37,120 +36,141 @@ class StudentInformationScreen extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              // Profile Photo - Read only (no tap action)
-              Stack(
-                children: [
-                  Obx(() {
-                    return CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.blue.shade200,
-                      child: ClipOval(
-                        child: _buildProfileImage(controller),
+        return RefreshIndicator(
+          onRefresh: () async {
+            await controller.loadStudentInformation();
+          },
+          color: const Color(0xFF5B7FBF),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Profile Photo - Read only (no tap action)
+                Stack(
+                  children: [
+                    Obx(() {
+                      return CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.blue.shade200,
+                        child: ClipOval(
+                          child: _buildProfileImage(controller),
+                        ),
+                      );
+                    }),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Assets.images.camera.image(width: 20, height: 20),
                       ),
-                    );
-                  }),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Assets.images.camera.image(width: 20, height: 20),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-
-              _buildTextField(
-                label: 'Preferred Name',
-                controller: controller.preferredNameController,
-                maxLength: 18,
-                readOnly: true,
-              ),
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                label: 'Date of Birth',
-                controller: controller.dobController,
-                suffixIcon: Assets.images.dateOfBirthIcon,
-                readOnly: true,
-              ),
-              const SizedBox(height: 20),
-
-              Obx(() => _buildDropdownField(
-                label: 'Gender',
-                value: controller.selectedGender.value,
-                items: const ['Male', 'Female', 'Non-binary'],
-                enabled: false,
-              )),
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                label: 'Parent / Legal Guardian 1',
-                controller: controller.guardian1Controller,
-                readOnly: true,
-              ),
-              const SizedBox(height: 20),
-
-              _buildTextField(
-                label: 'Parent / Legal Guardian 2',
-                controller: controller.guardian2Controller,
-                readOnly: true,
-              ),
-              const SizedBox(height: 20),
-
-              Obx(() => _buildDropdownField(
-                label: 'Pronouns',
-                value: controller.selectedPronoun.value,
-                items: const ['She / Her', 'He / Him', 'They / Them', 'Prefer not to say'],
-                enabled: false,
-              )),
-              const SizedBox(height: 40),
-
-              // Edit Profile button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Navigate to edit profile screen using GoRouter
-                    context.go(RoutePath.studentProfileUpdate.addBasePath);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5B7FBF),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text('Edit Student Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 30),
+
+                _buildTextField(
+                  label: 'Preferred Name',
+                  controller: controller.preferredNameController,
+                  maxLength: 18,
+                  readOnly: true,
+                ),
+                const SizedBox(height: 20),
+
+                _buildTextField(
+                  label: 'Date of Birth',
+                  controller: controller.dobController,
+                  suffixIcon: Assets.images.dateOfBirthIcon,
+                  readOnly: true,
+                ),
+                const SizedBox(height: 20),
+
+                Obx(() => _buildDropdownField(
+                  label: 'Gender',
+                  value: controller.selectedGender.value,
+                  items: const ['Male', 'Female', 'Non-binary'],
+                  enabled: false,
+                )),
+                const SizedBox(height: 20),
+
+                _buildTextField(
+                  label: 'Parent / Legal Guardian 1',
+                  controller: controller.guardian1Controller,
+                  readOnly: true,
+                ),
+                const SizedBox(height: 20),
+
+                _buildTextField(
+                  label: 'Parent / Legal Guardian 2',
+                  controller: controller.guardian2Controller,
+                  readOnly: true,
+                ),
+                const SizedBox(height: 20),
+
+                Obx(() => _buildDropdownField(
+                  label: 'Pronouns',
+                  value: controller.selectedPronoun.value,
+                  items: const ['She / Her', 'He / Him', 'They / Them', 'Prefer not to say'],
+                  enabled: false,
+                )),
+                const SizedBox(height: 40),
+
+                // Edit Profile button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Navigate to edit profile screen using GoRouter
+                      context.go(RoutePath.studentProfileUpdate.addBasePath);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF5B7FBF),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Edit Student Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       }),
     );
   }
 
-  // Build profile image widget - read only
+  // Build profile image widget - read only, direct from API
   Widget _buildProfileImage(StudentInformationController controller) {
-    // Display existing profile photo from URL
+    // Display existing profile photo from URL (direct from API, no caching)
     if (controller.profilePhotoUrl.value.isNotEmpty &&
         controller.profilePhotoUrl.value.startsWith('http')) {
-      return CachedNetworkImage(
-        imageUrl: controller.profilePhotoUrl.value,
+      return Image.network(
+        controller.profilePhotoUrl.value,
         width: 120,
         height: 120,
         fit: BoxFit.cover,
-        placeholder: (context, url) => const CircularProgressIndicator(),
-        errorWidget: (context, url, error) =>
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return SizedBox(
+            width: 120,
+            height: 120,
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) =>
             Assets.images.abdullahAlJunaid.image(width: 120, height: 120, fit: BoxFit.cover),
       );
     }

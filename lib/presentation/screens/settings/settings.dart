@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iywt/core/routes/routes.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
 import '../../../global/controler/settings/student_information_controler.dart';
@@ -71,15 +70,27 @@ class SettingsScreen extends StatelessWidget {
                                       .profilePhotoUrl.value.isEmpty
                                   ? Assets.images.abdullahAlJunaid.image(
                                       width: 60, height: 60, fit: BoxFit.cover)
-                                  : CachedNetworkImage(
-                                      imageUrl: studentController
-                                          .profilePhotoUrl.value,
+                                  : Image.network(
+                                      studentController.profilePhotoUrl.value,
                                       width: 60,
                                       height: 60,
                                       fit: BoxFit.cover,
-                                      placeholder: (context, url) =>
-                                          const CircularProgressIndicator(),
-                                      errorWidget: (context, url, error) =>
+                                      loadingBuilder: (context, child, loadingProgress) {
+                                        if (loadingProgress == null) return child;
+                                        return SizedBox(
+                                          width: 60,
+                                          height: 60,
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress.expectedTotalBytes != null
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      loadingProgress.expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder: (context, error, stackTrace) =>
                                           Assets.images.abdullahAlJunaid.image(
                                               width: 60,
                                               height: 60,

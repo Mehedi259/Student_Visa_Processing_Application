@@ -54,8 +54,7 @@ class StudentProfileUpdateModel {
         'parentLegalGuardianTwoName': parentLegalGuardianTwoName!,
       if (pronouns?.isNotEmpty == true)
         'pronouns': pronouns!,
-      // ⛔ 'profilePhotoUrl' → কখনো এখানে আসবে না
-      // ✅ 'profilePhoto'    → service এ File/Uint8List হিসেবে যাবে
+
     };
   }
 
