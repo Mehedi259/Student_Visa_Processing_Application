@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iywt/core/routes/routes.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 import '../../../core/routes/route_path.dart';
+import '../../../global/controler/home/home_controler.dart';
 import '../../../global/controler/settings/student_information_controler.dart';
 import '../../../global/storage/storage_helper.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
@@ -283,7 +284,17 @@ class SettingsScreen extends StatelessWidget {
 
                 // Clear all stored data
                 await StorageHelper.clearToken();
+                await StorageHelper.clearRefreshToken();
                 await StorageHelper.clearRememberMe();
+
+                // Delete all GetX controllers to clear cached data
+                Get.delete<StudentInformationController>(force: true);
+                Get.delete<HomeController>(force: true);
+                try {
+                  Get.delete(force: true); // Delete all controllers
+                } catch (e) {
+                  print("⚠️ Error deleting controllers: $e");
+                }
 
                 // Close loading dialog
                 if (context.mounted) {
@@ -300,7 +311,7 @@ class SettingsScreen extends StatelessWidget {
                   SnackbarUtils.showSuccess(context, 'Logged out successfully');
                 }
 
-                print("✅ Logout successful - Token cleared");
+                print("✅ Logout successful - Token cleared and controllers deleted");
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF375BA4),

@@ -255,10 +255,16 @@ class LoginController extends GetxController {
       } else {
         developer.log('❌ Login failed: ${result['error']}',
             name: 'LoginController');
-        _showSnackBar(
-          result['error'] ?? 'Invalid credentials',
-          isError: true,
-        );
+        
+        // Extract user-friendly error message
+        String errorMessage = result['error'] ?? 'Invalid credentials';
+        if (errorMessage.contains('Wrong password')) {
+          errorMessage = 'Wrong password or email';
+        } else if (errorMessage.contains('401')) {
+          errorMessage = 'Wrong password or email';
+        }
+        
+        _showSnackBar(errorMessage, isError: true);
       }
     } catch (e) {
       developer.log('❌ Login error: $e', name: 'LoginController');

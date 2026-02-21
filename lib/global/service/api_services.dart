@@ -32,17 +32,27 @@ class ApiService {
           name: 'ApiService');
       developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
 
-      // Handle 401 Unauthorized - Token expired
-      if (response.statusCode == 401 && endpoint != ApiConstants.refresh) {
-        developer.log('🔄 Token expired, attempting refresh...',
-            name: 'ApiService');
-        final refreshed = await _refreshToken();
+      // Handle 401 Unauthorized
+      if (response.statusCode == 401) {
+        // Don't try to refresh token for login endpoint
+        if (endpoint == ApiConstants.login) {
+          developer.log('❌ Login failed: Invalid credentials',
+              name: 'ApiService');
+          throw Exception("Wrong password or email");
+        }
+        
+        // Don't try to refresh if already refreshing
+        if (endpoint != ApiConstants.refresh) {
+          developer.log('🔄 Token expired, attempting refresh...',
+              name: 'ApiService');
+          final refreshed = await _refreshToken();
 
-        if (refreshed) {
-          // Retry the request with new token
-          return postRequest(endpoint, body: body);
-        } else {
-          throw Exception("Session expired. Please login again.");
+          if (refreshed) {
+            // Retry the request with new token
+            return postRequest(endpoint, body: body);
+          } else {
+            throw Exception("Session expired. Please login again.");
+          }
         }
       }
 
