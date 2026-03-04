@@ -313,7 +313,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           ? () {
                         if (_formKey.currentState!.validate()) {
                           // Handle password reset
-                          context.go(RoutePath.resetPasswordSuccess.addBasePath);
+                          context.push(RoutePath.resetPasswordSuccess.addBasePath);
                           SnackbarUtils.showSuccess(context, 'Password reset successfully!');
                         }
                       }

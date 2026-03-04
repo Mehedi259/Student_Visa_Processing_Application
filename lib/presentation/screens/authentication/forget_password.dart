@@ -52,10 +52,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               'Password reset link sent to your email!',
         );
 
-        // Navigate back to login after delay
+        // Navigate to OTP screen after delay
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
-            context.go(RoutePath.resetPasswordSuccess.addBasePath);
+            context.push(RoutePath.forgetPasswordOtp.addBasePath);
           }
         });
       } else {

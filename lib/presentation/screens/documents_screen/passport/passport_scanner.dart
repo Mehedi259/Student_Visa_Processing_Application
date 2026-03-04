@@ -64,7 +64,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.go(RoutePath.passport.addBasePath);
+          context.pop();
         }
       });
     }
@@ -559,7 +559,7 @@ class _PassportScannerScreenState extends State<PassportScannerScreen> {
             height: 40,
             fit: BoxFit.cover,
           ),
-          onPressed: () => context.go(RoutePath.passport.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Scanner',

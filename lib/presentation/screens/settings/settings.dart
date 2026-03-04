@@ -131,7 +131,7 @@ class SettingsScreen extends StatelessWidget {
                         icon: Assets.images.myInformation,
                         title: 'My Information',
                         onTap: () =>
-                            context.go(RoutePath.myInformation.addBasePath),
+                            context.push(RoutePath.myInformation.addBasePath),
                       ),
 
                       const SizedBox(height: 8),
@@ -149,7 +149,7 @@ class SettingsScreen extends StatelessWidget {
                         icon: Assets.images.tecnicalSupport,
                         title: 'Technical Support',
                         onTap: () =>
-                            context.go(RoutePath.technicalSupport.addBasePath),
+                            context.push(RoutePath.technicalSupport.addBasePath),
                       ),
 
                       _buildSettingOption(
@@ -157,7 +157,7 @@ class SettingsScreen extends StatelessWidget {
                         icon: Assets.images.privacyPolicy,
                         title: 'Privacy Policy',
                         onTap: () =>
-                            context.go(RoutePath.privacyPolicy.addBasePath),
+                            context.push(RoutePath.privacyPolicy.addBasePath),
                       ),
 
                       const Spacer(),

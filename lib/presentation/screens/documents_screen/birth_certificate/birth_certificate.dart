@@ -32,7 +32,7 @@ class _BirthCertificateScannerScreenState extends State<BirthCertificateScannerS
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
-            onTap: () => context.go(RoutePath.preliminary.addBasePath),
+            onTap: () => context.pop(),
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F3FF),
@@ -171,7 +171,7 @@ class _BirthCertificateScannerScreenState extends State<BirthCertificateScannerS
               width: 28,
             ),
             onPressed: () =>
-                context.go(RoutePath.birthCertificateScanner.addBasePath),
+                context.push(RoutePath.birthCertificateScanner.addBasePath),
           ),
         ],
       ),

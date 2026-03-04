@@ -66,7 +66,7 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.go(RoutePath.schoolAcceptanceScannerScreen.addBasePath);
+          context.pop();
         }
       });
     }
@@ -569,8 +569,7 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
             height: 40,
             fit: BoxFit.cover,
           ),
-          onPressed: () =>
-              context.go(RoutePath.schoolAcceptanceScannerScreen.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Scanner',

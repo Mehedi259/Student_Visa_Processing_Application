@@ -38,7 +38,7 @@ class _StudentScreenState extends State<StudentScreen> {
             height: 44,
             width: 44,
           ),
-          onPressed: () => context.go(RoutePath.documents.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Student',
@@ -151,7 +151,7 @@ class _StudentScreenState extends State<StudentScreen> {
                     doc.status.toLowerCase() == 'partiallycomplete',
                 onTap: () {
                   _controller.fetchDocumentDetail(doc.studentDocumentId);
-                  context.go(RoutePath.collegeCertificateScannerScreen.addBasePath);
+                  context.push(RoutePath.collegeCertificateScannerScreen.addBasePath);
                 },
               );
             },

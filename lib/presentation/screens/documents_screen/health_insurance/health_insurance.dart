@@ -33,7 +33,7 @@ class _HealthInsuranceScannerScreenState extends State<HealthInsuranceScannerScr
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
-            onTap: () => context.go(RoutePath.country.addBasePath),
+            onTap: () => context.pop(),
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F3FF),
@@ -172,7 +172,7 @@ class _HealthInsuranceScannerScreenState extends State<HealthInsuranceScannerScr
               width: 28,
             ),
             onPressed: () =>
-                context.go(RoutePath.healthInsuranceScanner.addBasePath),
+                context.push(RoutePath.healthInsuranceScanner.addBasePath),
           ),
         ],
       ),

@@ -234,7 +234,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   width: double.infinity,
                   height: 44,
                   child: ElevatedButton(
-                      onPressed: () => context.go(RoutePath.resetPassword.addBasePath),
+                      onPressed: () => context.push(RoutePath.resetPassword.addBasePath),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF375BA4),
                       disabledBackgroundColor: const Color(0x7F375BA4),

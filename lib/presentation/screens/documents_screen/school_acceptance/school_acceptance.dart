@@ -42,7 +42,7 @@ class _SchoolAcceptanceScannerScreenState
           child: GestureDetector(
             onTap: () {
               _controller.clearCurrentDocument();
-              context.go(RoutePath.country.addBasePath);
+              context.pop();
             },
             child: Container(
               decoration: BoxDecoration(
@@ -190,7 +190,7 @@ class _SchoolAcceptanceScannerScreenState
                 width: 28,
               ),
               onPressed: () =>
-                  context.go(RoutePath.schoolAcceptanceScanner.addBasePath),
+                  context.push(RoutePath.schoolAcceptanceScanner.addBasePath),
             ),
           ],
         ),

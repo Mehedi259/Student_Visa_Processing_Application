@@ -21,7 +21,7 @@ class MyInformationScreen extends StatelessWidget {
         leading: Container(
           child: IconButton(
             icon: Assets.images.backIcon.image(width: 44, height: 44),
-            onPressed: () => context.go(RoutePath.settings.addBasePath),
+            onPressed: () => context.pop(),
           ),
         ),
         title: const Text(

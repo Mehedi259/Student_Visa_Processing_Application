@@ -23,7 +23,7 @@ class StudentInformationScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Assets.images.backIcon.image(width: 44, height: 44),
-          onPressed: () => context.go(RoutePath.settings.addBasePath)
+          onPressed: () => context.pop()
         ),
         title: const Text(
           'Student Information',
@@ -127,7 +127,7 @@ class StudentInformationScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       // Navigate to edit profile screen using GoRouter
-                      context.go(RoutePath.studentProfileUpdate.addBasePath);
+                      context.push(RoutePath.studentProfileUpdate.addBasePath);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5B7FBF),

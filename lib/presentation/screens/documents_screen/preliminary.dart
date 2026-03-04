@@ -42,7 +42,7 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
             height: 40,
             width: 40,
           ),
-          onPressed: () => context.go(RoutePath.documents.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           "Preliminary",
@@ -148,7 +148,7 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
                     'You will upload documentation for ${doc.title.toLowerCase()}.',
                 onPressed: () {
                   _controller.fetchDocumentDetail(doc.studentDocumentId);
-                  context.go(RoutePath.passport.addBasePath);
+                  context.push(RoutePath.passport.addBasePath);
                 },
                 isComplete: doc.status.toLowerCase() == 'scanapproved' ||
                     doc.status.toLowerCase() == 'complete',

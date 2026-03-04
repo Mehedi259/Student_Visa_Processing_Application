@@ -33,7 +33,7 @@ class _CollegeTranscriptScannerScreenState extends State<CollegeTranscriptScanne
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: GestureDetector(
-            onTap: () => context.go(RoutePath.student.addBasePath),
+            onTap: () => context.pop(),
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFFE8F3FF),
@@ -172,7 +172,7 @@ class _CollegeTranscriptScannerScreenState extends State<CollegeTranscriptScanne
               width: 28,
             ),
             onPressed: () =>
-                context.go(RoutePath.collegeTranscriptScanner.addBasePath),
+                context.push(RoutePath.collegeTranscriptScanner.addBasePath),
           ),
         ],
       ),

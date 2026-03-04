@@ -66,7 +66,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.go(RoutePath.collegeCertificateScannerScreen.addBasePath);
+          context.pop();
         }
       });
     }
@@ -563,8 +563,7 @@ class _CollegeCertificateScannerState extends State<CollegeCertificateScanner> {
             height: 40,
             fit: BoxFit.cover,
           ),
-          onPressed: () =>
-              context.go(RoutePath.collegeCertificateScannerScreen.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Scanner',

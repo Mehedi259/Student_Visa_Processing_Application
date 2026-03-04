@@ -99,7 +99,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     title: 'Preliminary',
                     onTap: () {
                       _controller.fetchPreliminaryDocuments();
-                      context.go(RoutePath.preliminary.addBasePath);
+                      context.push(RoutePath.preliminary.addBasePath);
                     },
                     iconImage: Assets.images.preliminary.provider(),
                     progress: dashboard.preliminaryDocuments.completed,
@@ -112,7 +112,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     title: 'Student',
                     onTap: () {
                       _controller.fetchStudentDocuments();
-                      context.go(RoutePath.student.addBasePath);
+                      context.push(RoutePath.student.addBasePath);
                     },
                     iconImage: Assets.images.student.provider(),
                     progress: dashboard.studentDocuments.completed,
@@ -125,7 +125,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     title: 'Country',
                     onTap: () {
                       _controller.fetchCountryDocuments();
-                      context.go(RoutePath.country.addBasePath);
+                      context.push(RoutePath.country.addBasePath);
                     },
                     iconImage: Assets.images.country.provider(),
                     progress: dashboard.countryDocuments.completed,

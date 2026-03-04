@@ -4,9 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iywt/core/routes/routes.dart';
 import '../../../core/custom_assets/assets.gen.dart';
-import '../../../core/routes/route_path.dart';
 
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
@@ -20,7 +18,7 @@ class NotificationsScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Assets.images.backIcon.image(width: 44, height: 44),
-          onPressed: () => context.go(RoutePath.home.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Notifications',

@@ -55,7 +55,7 @@ class _BirthCertificateScannerState extends State<BirthCertificateScanner> {
 
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          context.go(RoutePath.passport.addBasePath);
+          context.pop();
         }
       });
     }
@@ -429,7 +429,7 @@ class _BirthCertificateScannerState extends State<BirthCertificateScanner> {
               fit: BoxFit.cover,
             ),
           ),
-          onPressed: () => context.go(RoutePath.passport.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Scanner',

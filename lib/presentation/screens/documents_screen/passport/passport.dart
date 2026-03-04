@@ -39,7 +39,7 @@ class _PassportScreenState extends State<PassportScreen> {
           child: GestureDetector(
             onTap: () {
               _controller.clearCurrentDocument();
-              context.go(RoutePath.preliminary.addBasePath);
+              context.pop();
             },
             child: Container(
               decoration: BoxDecoration(
@@ -187,7 +187,7 @@ class _PassportScreenState extends State<PassportScreen> {
                 color: Colors.white,
                 width: 28,
               ),
-              onPressed: () => context.go(RoutePath.passportScanner.addBasePath),
+              onPressed: () => context.push(RoutePath.passportScanner.addBasePath),
             ),
           ],
         ),

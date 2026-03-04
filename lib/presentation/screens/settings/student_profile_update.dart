@@ -27,7 +27,7 @@ class StudentProfileUpdateScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: Assets.images.backIcon.image(width: 44, height: 44),
-          onPressed: () => context.go(RoutePath.studentInformation.addBasePath),
+          onPressed: () => context.pop(),
         ),
         title: const Text(
           'Edit Profile',

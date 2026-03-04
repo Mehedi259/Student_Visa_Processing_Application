@@ -41,7 +41,7 @@ class _CollegeCertificateScannerScreenState
           child: GestureDetector(
             onTap: () {
               _controller.clearCurrentDocument();
-              context.go(RoutePath.student.addBasePath);
+              context.pop();
             },
             child: Container(
               decoration: BoxDecoration(
@@ -189,7 +189,7 @@ class _CollegeCertificateScannerScreenState
                 width: 28,
               ),
               onPressed: () =>
-                  context.go(RoutePath.collegeCertificateScanner.addBasePath),
+                  context.push(RoutePath.collegeCertificateScanner.addBasePath),
             ),
           ],
         ),
