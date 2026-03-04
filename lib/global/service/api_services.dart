@@ -214,6 +214,25 @@ class ApiService {
           name: 'ApiService');
       developer.log('📥 Response Body: ${response.body}', name: 'ApiService');
 
+      // Handle 401 Unauthorized - Token expired
+      if (response.statusCode == 401) {
+        developer.log('🔄 Token expired, attempting refresh...',
+            name: 'ApiService');
+        final refreshed = await _refreshToken();
+
+        if (refreshed) {
+          // Retry the request with new token
+          return patchMultipartRequest(
+            endpoint,
+            fields: fields,
+            files: files,
+            webFiles: webFiles,
+          );
+        } else {
+          throw Exception("Session expired. Please login again.");
+        }
+      }
+
       return processResponse(response);
     } catch (e) {
       developer.log('❌ Multipart PATCH Error: $e', name: 'ApiService');
@@ -255,6 +274,8 @@ class ApiService {
   static Future<bool> _refreshToken() async {
     if (_isRefreshing) {
       developer.log('⏳ Token refresh already in progress', name: 'ApiService');
+      // Wait a bit and return false to avoid concurrent refresh attempts
+      await Future.delayed(const Duration(milliseconds: 500));
       return false;
     }
 
@@ -266,6 +287,7 @@ class ApiService {
       if (refreshToken == null || refreshToken.isEmpty) {
         developer.log('❌ No refresh token available', name: 'ApiService');
         _isRefreshing = false;
+        await _handleSessionExpired();
         return false;
       }
 
@@ -299,17 +321,24 @@ class ApiService {
             name: 'ApiService');
         _isRefreshing = false;
 
-        // Clear tokens on refresh failure
-        await StorageHelper.clearToken();
-        await StorageHelper.clearRefreshToken();
-
+        // Clear tokens and handle session expiry
+        await _handleSessionExpired();
         return false;
       }
     } catch (e) {
       developer.log('❌ Token refresh error: $e', name: 'ApiService');
       _isRefreshing = false;
+      await _handleSessionExpired();
       return false;
     }
+  }
+
+  /// Handle session expired - clear all auth data
+  static Future<void> _handleSessionExpired() async {
+    developer.log('🔒 Session expired - clearing all auth data', name: 'ApiService');
+    await StorageHelper.clearToken();
+    await StorageHelper.clearRefreshToken();
+    await StorageHelper.clearRememberMe();
   }
 
   /// Response Handler

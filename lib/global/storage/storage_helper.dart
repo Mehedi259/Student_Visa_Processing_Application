@@ -65,9 +65,9 @@ class StorageHelper {
   }
 
   /// Check if user can use biometric login
+  /// Biometric is available if refresh token exists (regardless of remember me)
   static Future<bool> canUseBiometricLogin() async {
-    final token = await getToken();
-    final rememberMe = await getRememberMe();
-    return token != null && token.isNotEmpty && rememberMe;
+    final refreshToken = await getRefreshToken();
+    return refreshToken != null && refreshToken.isNotEmpty;
   }
 }

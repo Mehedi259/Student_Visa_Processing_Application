@@ -50,11 +50,13 @@ class LoginController extends GetxController {
       canUseBiometric.value = canCheck;
 
       if (canCheck) {
-        // Also load remember me state
+        // Load remember me state for checkbox
         rememberMe.value = await StorageHelper.getRememberMe();
       }
 
       developer.log('🔐 Biometric available: $canCheck',
+          name: 'LoginController');
+      developer.log('📋 Remember Me state: ${rememberMe.value}',
           name: 'LoginController');
     } catch (e) {
       developer.log('❌ Error checking biometric: $e', name: 'LoginController');
