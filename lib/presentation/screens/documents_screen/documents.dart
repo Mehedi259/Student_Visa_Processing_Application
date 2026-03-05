@@ -88,56 +88,68 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
           onRefresh: () async {
             await _controller.fetchDocumentsDashboard();
           },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 48, 20, 0),
-              child: Column(
-                children: [
-                  _buildDocumentCard(
-                    context: context,
-                    title: 'Preliminary',
-                    onTap: () {
-                      _controller.fetchPreliminaryDocuments();
-                      context.push(RoutePath.preliminary.addBasePath);
-                    },
-                    iconImage: Assets.images.preliminary.provider(),
-                    progress: dashboard.preliminaryDocuments.completed,
-                    total: dashboard.preliminaryDocuments.total,
-                    status: _getStatus(dashboard.preliminaryDocuments.status),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
+              final horizontalPadding = screenWidth > 600 ? 40.0 : 20.0;
+              
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    MediaQuery.of(context).size.height * 0.06,
+                    horizontalPadding,
+                    0,
                   ),
-                  const SizedBox(height: 12.91),
-                  _buildDocumentCard(
-                    context: context,
-                    title: 'Student',
-                    onTap: () {
-                      _controller.fetchStudentDocuments();
-                      context.push(RoutePath.student.addBasePath);
-                    },
-                    iconImage: Assets.images.student.provider(),
-                    progress: dashboard.studentDocuments.completed,
-                    total: dashboard.studentDocuments.total,
-                    status: _getStatus(dashboard.studentDocuments.status),
+                  child: Column(
+                    children: [
+                      _buildDocumentCard(
+                        context: context,
+                        title: 'Preliminary',
+                        onTap: () {
+                          _controller.fetchPreliminaryDocuments();
+                          context.push(RoutePath.preliminary.addBasePath);
+                        },
+                        iconImage: Assets.images.preliminary.provider(),
+                        progress: dashboard.preliminaryDocuments.completed,
+                        total: dashboard.preliminaryDocuments.total,
+                        status: _getStatus(dashboard.preliminaryDocuments.status),
+                      ),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.016),
+                      _buildDocumentCard(
+                        context: context,
+                        title: 'Student',
+                        onTap: () {
+                          _controller.fetchStudentDocuments();
+                          context.push(RoutePath.student.addBasePath);
+                        },
+                        iconImage: Assets.images.student.provider(),
+                        progress: dashboard.studentDocuments.completed,
+                        total: dashboard.studentDocuments.total,
+                        status: _getStatus(dashboard.studentDocuments.status),
+                      ),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.016),
+                      _buildDocumentCard(
+                        context: context,
+                        title: 'Country',
+                        onTap: () {
+                          _controller.fetchCountryDocuments();
+                          context.push(RoutePath.country.addBasePath);
+                        },
+                        iconImage: Assets.images.country.provider(),
+                        progress: dashboard.countryDocuments.completed,
+                        total: dashboard.countryDocuments.total,
+                        status: _getStatus(dashboard.countryDocuments.status),
+                        isCountryFlag: true,
+                        countryFlagUrl: dashboard.countryFlagUrl,
+                      ),
+                      SizedBox(height: MediaQuery.of(context).size.height * 0.12),
+                    ],
                   ),
-                  const SizedBox(height: 12.91),
-                  _buildDocumentCard(
-                    context: context,
-                    title: 'Country',
-                    onTap: () {
-                      _controller.fetchCountryDocuments();
-                      context.push(RoutePath.country.addBasePath);
-                    },
-                    iconImage: Assets.images.country.provider(),
-                    progress: dashboard.countryDocuments.completed,
-                    total: dashboard.countryDocuments.total,
-                    status: _getStatus(dashboard.countryDocuments.status),
-                    isCountryFlag: true,
-                    countryFlagUrl: dashboard.countryFlagUrl,
-                  ),
-                  const SizedBox(height: 100),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         );
       }),
@@ -184,25 +196,40 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       statusIconSize = 16;
     }
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // Responsive sizing
+    final cardHorizontalPadding = screenWidth * 0.065;
+    final cardVerticalPadding = screenHeight * 0.02;
+    final iconSize = screenWidth * 0.095;
+    final iconImageSize = screenWidth * 0.06;
+    final titleFontSize = screenWidth * 0.055;
+    final progressFontSize = screenWidth * 0.045;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        constraints: const BoxConstraints(
-          maxWidth: 353,
-          minHeight: 119.09,
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxWidth: screenWidth > 600 ? 500 : double.infinity,
+          minHeight: screenHeight * 0.14,
         ),
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F7),
           borderRadius: BorderRadius.circular(10),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16.62),
+        padding: EdgeInsets.symmetric(
+          horizontal: cardHorizontalPadding,
+          vertical: cardVerticalPadding,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Icon
             Container(
-              width: 38.16,
-              height: 38.16,
+              width: iconSize,
+              height: iconSize,
               decoration: BoxDecoration(
                 color: isCountryFlag
                     ? const Color(0xFFF5F5F7)
@@ -216,13 +243,13 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                     ? ClipOval(
                         child: Image.network(
                           countryFlagUrl,
-                          width: 24,
-                          height: 24,
+                          width: iconImageSize,
+                          height: iconImageSize,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return SizedBox(
-                              width: 24,
-                              height: 24,
+                              width: iconImageSize,
+                              height: iconImageSize,
                               child: Image(
                                 image: iconImage,
                                 fit: BoxFit.contain,
@@ -231,14 +258,14 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           },
                           loadingBuilder: (context, child, loadingProgress) {
                             if (loadingProgress == null) return child;
-                            return const SizedBox(
-                              width: 24,
-                              height: 24,
+                            return SizedBox(
+                              width: iconImageSize,
+                              height: iconImageSize,
                               child: Center(
                                 child: SizedBox(
-                                  width: 12,
-                                  height: 12,
-                                  child: CircularProgressIndicator(
+                                  width: iconImageSize * 0.5,
+                                  height: iconImageSize * 0.5,
+                                  child: const CircularProgressIndicator(
                                     strokeWidth: 2,
                                     color: Color(0xFF375BA4),
                                   ),
@@ -249,8 +276,8 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         ),
                       )
                     : SizedBox(
-                        width: 24,
-                        height: 24,
+                        width: iconImageSize,
+                        height: iconImageSize,
                         child: Image(
                           image: iconImage,
                           fit: BoxFit.contain,
@@ -258,24 +285,29 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 14),
+            SizedBox(height: screenHeight * 0.017),
             // Title and Progress Row
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Title
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xFF1D1B20),
+                Flexible(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: titleFontSize.clamp(18.0, 22.0),
+                      fontFamily: 'Inter',
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1D1B20),
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
+                const SizedBox(width: 8),
                 // Status, Progress, and Chevron
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     if (statusImage != null) ...[
                       SizedBox(
@@ -286,15 +318,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                           fit: BoxFit.contain,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                     ],
                     Text(
                       '$progress/$total',
-                      style: const TextStyle(
-                        fontSize: 18,
+                      style: TextStyle(
+                        fontSize: progressFontSize.clamp(16.0, 18.0),
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFFC7C7C7),
+                        color: const Color(0xFFC7C7C7),
                       ),
                     ),
                     const SizedBox(width: 4),
