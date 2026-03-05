@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   height: 24,
                                 ),
                                 onPressed: () => context
-                                    .go(RoutePath.notification.addBasePath),
+                                    .push(RoutePath.notification.addBasePath),
                               ),
                               if (dashboard != null &&
                                   dashboard.unreadMessages > 0)
