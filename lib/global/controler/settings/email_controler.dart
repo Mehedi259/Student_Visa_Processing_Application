@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../model/settings/email_model.dart';
 import '../../service/settings/email_service.dart';
+import '../../utils/snackbar_utils.dart';
 
 class EmailController extends GetxController {
   final isLoading = false.obs;
@@ -27,7 +29,7 @@ class EmailController extends GetxController {
       final data = await EmailService.getEmails();
       emails.value = data;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load emails');
+      print('Error loading emails: $e');
     } finally {
       isLoading.value = false;
     }
@@ -48,9 +50,11 @@ class EmailController extends GetxController {
   }
 
   // Save or update email
-  Future<void> saveEmail() async {
+  Future<void> saveEmail(BuildContext context) async {
     if (currentEmailId == null) {
-      Get.snackbar('Error', 'Email ID not found');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'Email ID not found');
+      }
       return;
     }
 
@@ -66,15 +70,20 @@ class EmailController extends GetxController {
       final success = await EmailService.updateEmail(currentEmailId!, email);
 
       if (success) {
-        Get.snackbar('Success', 'Email saved successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        Get.back();
         await loadEmails();
+        if (context.mounted) {
+          SnackbarUtils.showSuccess(context, 'Email saved successfully');
+          context.pop();
+        }
       } else {
-        Get.snackbar('Error', 'Failed to save email');
+        if (context.mounted) {
+          SnackbarUtils.showError(context, 'Failed to save email');
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'An error occurred');
+      }
     } finally {
       isLoading.value = false;
     }

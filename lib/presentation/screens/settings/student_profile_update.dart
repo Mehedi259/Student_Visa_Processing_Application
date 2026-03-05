@@ -1,6 +1,5 @@
 // lib/features/settings/student_profile_update_screen.dart
 
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,8 +7,6 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/custom_assets/assets.gen.dart';
-import '../../../core/routes/route_path.dart';
-import '../../../core/routes/routes.dart';
 import '../../../global/controler/settings/student_profile_update_controller.dart';
 
 
@@ -118,7 +115,49 @@ class StudentProfileUpdateScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: controller.isSaving.value
                       ? null
-                      : controller.saveChanges,
+                      : () async {
+                    await controller.saveChanges();
+                    // Show success message if no error
+                    if (context.mounted && controller.errorMessage.value == null) {
+                      // Import SnackbarUtils at the top
+                      // ignore: use_build_context_synchronously
+                      context.pop();
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'Profile updated successfully',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: const Color(0xFF28A745),
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 3),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          margin: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          elevation: 6,
+                        ),
+                      );
+                    }
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF5B7FBF),
                     foregroundColor: Colors.white,

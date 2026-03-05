@@ -3,7 +3,6 @@
 import 'dart:io';
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -119,7 +118,7 @@ class StudentProfileUpdateController extends GetxController {
     } catch (e) {
       developer.log('Image pick error: $e',
           name: 'StudentProfileUpdateController');
-      _showError('Could not select image. Please try again.');
+      errorMessage.value = 'Could not select image. Please try again.';
     }
   }
 
@@ -170,12 +169,12 @@ class StudentProfileUpdateController extends GetxController {
       developer.log('Profile saved successfully',
           name: 'StudentProfileUpdateController');
 
-      _showSuccess('Profile updated successfully!');
+      // Success - will be shown by the screen
+      errorMessage.value = null;
     } catch (e) {
       errorMessage.value = 'Failed to save profile. Please try again.';
       developer.log('saveChanges error: $e',
           name: 'StudentProfileUpdateController');
-      _showError('Could not update profile. Please try again.');
     } finally {
       isSaving.value = false;
     }
@@ -202,56 +201,4 @@ class StudentProfileUpdateController extends GetxController {
   bool get hasLocalImage =>
       (!kIsWeb && selectedImageFile.value != null) ||
           (kIsWeb && selectedImageBytes.value != null);
-
-  // ---------------------------------------------------------------------------
-  // Snackbar helpers — safe wrappers that prevent the null overlay crash
-  //
-  // Root cause: Get.snackbar internally calls Get.context, which is null
-  // during a GoRouter transition (the overlay is momentarily unmounted).
-  // We guard with a null check and an isSnackbarOpen guard to be safe.
-  // ---------------------------------------------------------------------------
-  void _showSuccess(String message) {
-    _safeSnackbar(
-      title: 'Success',
-      message: message,
-      backgroundColor: Colors.green.shade600,
-    );
-  }
-
-  void _showError(String message) {
-    _safeSnackbar(
-      title: 'Error',
-      message: message,
-      backgroundColor: Colors.red.shade600,
-    );
-  }
-
-  void _safeSnackbar({
-    required String title,
-    required String message,
-    required Color backgroundColor,
-  }) {
-    // Prevent stacking multiple snackbars
-    if (Get.isSnackbarOpen) return;
-
-    // Get.context is null when no overlay is active (e.g. mid-GoRouter push).
-    // Without this guard, SnackbarController throws:
-    //   "Null check operator used on a null value" at snackbar_controller.dart:94
-    if (Get.context == null) {
-      developer.log('Snackbar skipped — no active context',
-          name: 'StudentProfileUpdateController');
-      return;
-    }
-
-    Get.snackbar(
-      title,
-      message,
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: backgroundColor,
-      colorText: Colors.white,
-      duration: const Duration(seconds: 3),
-      margin: const EdgeInsets.all(16),
-      borderRadius: 12,
-    );
-  }
 }

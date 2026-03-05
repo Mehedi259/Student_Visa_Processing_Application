@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../model/settings/phone_model.dart';
 import '../../service/settings/phone_service.dart';
+import '../../utils/snackbar_utils.dart';
 
 class PhoneController extends GetxController {
   final isLoading = false.obs;
@@ -27,7 +29,7 @@ class PhoneController extends GetxController {
       final data = await PhoneService.getPhones();
       phones.value = data;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load phone numbers');
+      print('Error loading phone numbers: $e');
     } finally {
       isLoading.value = false;
     }
@@ -48,9 +50,11 @@ class PhoneController extends GetxController {
   }
 
   // Save or update phone
-  Future<void> savePhone() async {
+  Future<void> savePhone(BuildContext context) async {
     if (currentPhoneId == null) {
-      Get.snackbar('Error', 'Phone ID not found');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'Phone ID not found');
+      }
       return;
     }
 
@@ -66,15 +70,20 @@ class PhoneController extends GetxController {
       final success = await PhoneService.updatePhone(currentPhoneId!, phone);
 
       if (success) {
-        Get.snackbar('Success', 'Phone number saved successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        Get.back();
         await loadPhones();
+        if (context.mounted) {
+          SnackbarUtils.showSuccess(context, 'Phone number saved successfully');
+          context.pop();
+        }
       } else {
-        Get.snackbar('Error', 'Failed to save phone number');
+        if (context.mounted) {
+          SnackbarUtils.showError(context, 'Failed to save phone number');
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'An error occurred');
+      }
     } finally {
       isLoading.value = false;
     }

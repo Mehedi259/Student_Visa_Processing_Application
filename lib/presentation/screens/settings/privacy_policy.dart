@@ -4,11 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iywt/core/routes/routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/custom_assets/assets.gen.dart';
-import '../../../core/routes/route_path.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});

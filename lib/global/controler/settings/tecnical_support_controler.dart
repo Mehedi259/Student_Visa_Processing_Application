@@ -2,9 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../model/settings/tecnical_support_model.dart';
 import '../../service/settings/tecnical_support_service.dart';
+import '../../utils/snackbar_utils.dart';
 
 class TechnicalSupportController extends GetxController {
   final isLoading = false.obs;
@@ -13,9 +15,11 @@ class TechnicalSupportController extends GetxController {
   final bodyController = TextEditingController();
 
   // Submit support request
-  Future<void> submitRequest() async {
+  Future<void> submitRequest(BuildContext context) async {
     if (subjectController.text.isEmpty || bodyController.text.isEmpty) {
-      Get.snackbar('Error', 'Please fill in all fields');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'Please fill in all fields');
+      }
       return;
     }
 
@@ -30,16 +34,21 @@ class TechnicalSupportController extends GetxController {
       final success = await TechnicalSupportService.submitSupportRequest(request);
 
       if (success) {
-        Get.snackbar('Success', 'Support request submitted successfully',
-            snackPosition: SnackPosition.BOTTOM);
         subjectController.clear();
         bodyController.clear();
-        Get.back();
+        if (context.mounted) {
+          SnackbarUtils.showSuccess(context, 'Support request submitted successfully');
+          context.pop();
+        }
       } else {
-        Get.snackbar('Error', 'Failed to submit request');
+        if (context.mounted) {
+          SnackbarUtils.showError(context, 'Failed to submit request');
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'An error occurred');
+      }
     } finally {
       isLoading.value = false;
     }

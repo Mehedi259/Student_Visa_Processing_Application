@@ -2,8 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import '../../model/settings/address_model.dart';
 import '../../service/settings/address_service.dart';
+import '../../utils/snackbar_utils.dart';
 
 class AddressController extends GetxController {
   final isLoading = false.obs;
@@ -32,7 +34,7 @@ class AddressController extends GetxController {
       final data = await AddressService.getAddresses();
       addresses.value = data;
     } catch (e) {
-      Get.snackbar('Error', 'Failed to load addresses');
+      print('Error loading addresses: $e');
     } finally {
       isLoading.value = false;
     }
@@ -60,9 +62,11 @@ class AddressController extends GetxController {
   }
 
   // Save or update address
-  Future<void> saveAddress() async {
+  Future<void> saveAddress(BuildContext context) async {
     if (currentAddressId == null) {
-      Get.snackbar('Error', 'Address ID not found');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'Address ID not found');
+      }
       return;
     }
 
@@ -82,15 +86,20 @@ class AddressController extends GetxController {
       final success = await AddressService.updateAddress(currentAddressId!, address);
 
       if (success) {
-        Get.snackbar('Success', 'Address saved successfully',
-            snackPosition: SnackPosition.BOTTOM);
-        Get.back();
         await loadAddresses();
+        if (context.mounted) {
+          SnackbarUtils.showSuccess(context, 'Address saved successfully');
+          context.pop();
+        }
       } else {
-        Get.snackbar('Error', 'Failed to save address');
+        if (context.mounted) {
+          SnackbarUtils.showError(context, 'Failed to save address');
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'An error occurred');
+      if (context.mounted) {
+        SnackbarUtils.showError(context, 'An error occurred');
+      }
     } finally {
       isLoading.value = false;
     }

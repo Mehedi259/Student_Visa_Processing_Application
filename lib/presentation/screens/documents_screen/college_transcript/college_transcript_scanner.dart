@@ -2,11 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iywt/core/routes/routes.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/custom_assets/assets.gen.dart';
-import '../../../../core/routes/route_path.dart';
 import '../../../../global/utils/snackbar_utils.dart';
 
 class CollegeTranscriptScanner extends StatefulWidget {

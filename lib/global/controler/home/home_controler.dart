@@ -1,6 +1,5 @@
 // lib/global/controler/home/home_controler.dart
 
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'dart:developer' as developer;
 import '../../model/home/home_model.dart';

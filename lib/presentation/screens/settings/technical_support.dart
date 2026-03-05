@@ -3,9 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iywt/core/routes/routes.dart';
 import '../../../core/custom_assets/assets.gen.dart';
-import '../../../core/routes/route_path.dart';
 import '../../../global/controler/settings/tecnical_support_controler.dart';
 
 
@@ -82,7 +80,7 @@ class TechnicalSupportScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: controller.isLoading.value ? null : controller.submitRequest,
+                onPressed: controller.isLoading.value ? null : () => controller.submitRequest(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5B7FBF),
                   foregroundColor: Colors.white,

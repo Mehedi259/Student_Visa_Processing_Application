@@ -63,7 +63,7 @@ class AddAddressScreen extends StatelessWidget {
               width: double.infinity,
               height: 50,
               child: ElevatedButton(
-                onPressed: controller.isLoading.value ? null : controller.saveAddress,
+                onPressed: controller.isLoading.value ? null : () => controller.saveAddress(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF5B7FBF),
                   foregroundColor: Colors.white,
