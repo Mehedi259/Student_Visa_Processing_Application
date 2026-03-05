@@ -28,7 +28,6 @@ import '../../presentation/screens/legal_entry_basic/destination.dart';
 import '../../presentation/screens/massage_screen/massage_screen.dart';
 import '../../presentation/screens/notification/notification.dart';
 import '../../presentation/screens/settings/settings.dart';
-import '../../presentation/screens/settings/my_information.dart';
 import '../../presentation/screens/settings/student_information.dart';
 import '../../presentation/screens/settings/student_profile_update.dart';
 import '../../presentation/screens/settings/address.dart';
@@ -192,11 +191,6 @@ class AppRouter {
         name: RoutePath.settings,
         path: RoutePath.settings.addBasePath,
         builder: (context, state) => const SettingsScreen(),
-      ),
-      GoRoute(
-        name: RoutePath.myInformation,
-        path: RoutePath.myInformation.addBasePath,
-        builder: (context, state) => const MyInformationScreen(),
       ),
       GoRoute(
         name: RoutePath.studentInformation,

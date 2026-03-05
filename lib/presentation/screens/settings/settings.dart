@@ -129,9 +129,30 @@ class SettingsScreen extends StatelessWidget {
                       _buildSettingOption(
                         context: context,
                         icon: Assets.images.myInformation,
-                        title: 'My Information',
+                        title: 'Student Information',
                         onTap: () =>
-                            context.push(RoutePath.myInformation.addBasePath),
+                            context.push(RoutePath.studentInformation.addBasePath),
+                      ),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.location,
+                        title: 'Address',
+                        onTap: () => context.push(RoutePath.address.addBasePath),
+                      ),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.email,
+                        title: 'Email',
+                        onTap: () => context.push(RoutePath.email.addBasePath),
+                      ),
+
+                      _buildSettingOption(
+                        context: context,
+                        icon: Assets.images.phone,
+                        title: 'Phone',
+                        onTap: () => context.push(RoutePath.phone.addBasePath),
                       ),
 
                       const SizedBox(height: 8),
