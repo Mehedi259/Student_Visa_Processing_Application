@@ -34,7 +34,7 @@
     </queries>
 
     <application
-        android:label="iywt"
+        android:label="IYWT"
 
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
