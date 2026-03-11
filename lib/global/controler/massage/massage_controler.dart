@@ -236,17 +236,18 @@ class MessageController extends GetxController {
     selectedFileName.value = '';
   }
 
-  /// Search Messages
+  /// Search Messages with context (show surrounding messages)
   void searchMessages(String query) {
     searchQuery.value = query.toLowerCase();
   }
 
-  /// Get Filtered Messages
+  /// Get Filtered Messages (only exact matches, no context)
   List<MessageItem> get filteredMessages {
     if (searchQuery.value.isEmpty) {
       return messages;
     }
 
+    // Return only messages that contain the search query
     return messages.where((msg) {
       return msg.subject.toLowerCase().contains(searchQuery.value) ||
           msg.body.toLowerCase().contains(searchQuery.value) ||

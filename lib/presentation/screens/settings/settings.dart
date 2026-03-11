@@ -35,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Obx(() => RefreshIndicator(
+      body: RefreshIndicator(
             onRefresh: () async {
               await studentController.loadStudentInformation();
             },
@@ -54,65 +54,27 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       const SizedBox(height: 24),
 
-                      // Profile Section
+                      // Profile Name Section
                       Container(
                         margin: const EdgeInsets.symmetric(horizontal: 20),
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 13, vertical: 10),
+                            horizontal: 13, vertical: 15),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF5F5F7),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(99),
-                              child: studentController
-                                      .profilePhotoUrl.value.isEmpty
-                                  ? Assets.images.abdullahAlJunaid.image(
-                                      width: 60, height: 60, fit: BoxFit.cover)
-                                  : Image.network(
-                                      studentController.profilePhotoUrl.value,
-                                      width: 60,
-                                      height: 60,
-                                      fit: BoxFit.cover,
-                                      loadingBuilder: (context, child, loadingProgress) {
-                                        if (loadingProgress == null) return child;
-                                        return SizedBox(
-                                          width: 60,
-                                          height: 60,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress.expectedTotalBytes != null
-                                                  ? loadingProgress.cumulativeBytesLoaded /
-                                                      loadingProgress.expectedTotalBytes!
-                                                  : null,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      errorBuilder: (context, error, stackTrace) =>
-                                          Assets.images.abdullahAlJunaid.image(
-                                              width: 60,
-                                              height: 60,
-                                              fit: BoxFit.cover),
-                                    ),
+                        child: Center(
+                          child: Obx(() => Text(
+                            studentController.studentInfo.value?.preferredName?.isEmpty ?? true
+                                ? 'Student Name'
+                                : studentController.studentInfo.value!.preferredName!,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF1D1B20),
+                              fontFamily: 'Nunito Sans',
                             ),
-                            const SizedBox(width: 10),
-                            Text(
-                              studentController
-                                      .preferredNameController.text.isEmpty
-                                  ? 'Student Name'
-                                  : studentController
-                                      .preferredNameController.text,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1D1B20),
-                                fontFamily: 'Nunito Sans',
-                              ),
-                            ),
-                          ],
+                          )),
                         ),
                       ),
 
@@ -125,6 +87,8 @@ class SettingsScreen extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 18),
+
+
 
                       _buildSettingOption(
                         context: context,
@@ -213,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
             ),
-          )),
+          ),
       bottomNavigationBar: const CustomNavBar(currentIndex: 4),
     );
   }

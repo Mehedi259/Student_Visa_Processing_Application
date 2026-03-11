@@ -78,6 +78,9 @@ class _MessageScreenState extends State<MessageScreen> {
 
   bool _isSearchVisible = false;
   bool _showScrollToBottom = false;
+  
+  // Track expanded state for each message (using String key for messageId)
+  final Map<String, bool> _expandedMessages = {};
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -139,6 +142,10 @@ class _MessageScreenState extends State<MessageScreen> {
       if (!_isSearchVisible) {
         _searchController.clear();
         _controller.searchMessages('');
+        // Scroll to bottom when search is cleared
+        Future.delayed(const Duration(milliseconds: 100), () {
+          _scrollToBottom(animated: true);
+        });
       }
     });
   }
@@ -323,6 +330,87 @@ class _MessageScreenState extends State<MessageScreen> {
   String _formatTime(DateTime dateTime) =>
       DateFormat('dd MMM yyyy @ HH:mm').format(dateTime);
 
+  /// Strip HTML tags to get plain text length
+  String _stripHtmlTags(String html) {
+    return html
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&nbsp;', ' ')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .trim();
+  }
+
+  /// Truncate HTML content to approximately N characters
+  String _truncateHtml(String html, int maxLength) {
+    final plainText = _stripHtmlTags(html);
+    if (plainText.length <= maxLength) {
+      return html;
+    }
+
+    // Simple truncation - find a good breaking point
+    int breakPoint = maxLength;
+    final words = plainText.substring(0, maxLength).split(' ');
+    if (words.length > 1) {
+      words.removeLast(); // Remove partial word
+      final truncated = words.join(' ');
+      breakPoint = truncated.length;
+    }
+
+    // Try to preserve HTML structure for the truncated part
+    String result = '';
+    int charCount = 0;
+    bool inTag = false;
+
+    for (int i = 0; i < html.length && charCount < breakPoint; i++) {
+      final char = html[i];
+      result += char;
+
+      if (char == '<') {
+        inTag = true;
+      } else if (char == '>') {
+        inTag = false;
+      } else if (!inTag) {
+        charCount++;
+      }
+    }
+
+    return result;
+  }
+
+  /// Build HTML widget with highlighted search terms
+  Widget _buildHighlightedHtml(String html, Color textColor) {
+    if (_controller.searchQuery.value.isEmpty) {
+      return HtmlWidget(
+        html,
+        textStyle: TextStyle(
+          fontSize: 14,
+          color: textColor,
+          height: 1.4,
+        ),
+      );
+    }
+
+    // Highlight search query in HTML
+    final query = _controller.searchQuery.value;
+    final plainText = _stripHtmlTags(html);
+    
+    // Case-insensitive search and replace with highlighted version
+    final highlightedHtml = html.replaceAllMapped(
+      RegExp(RegExp.escape(query), caseSensitive: false),
+      (match) => '<mark style="background-color: #FFEB3B; color: #000000; padding: 2px 4px; border-radius: 3px;">${match.group(0)}</mark>',
+    );
+
+    return HtmlWidget(
+      highlightedHtml,
+      textStyle: TextStyle(
+        fontSize: 14,
+        color: textColor,
+        height: 1.4,
+      ),
+    );
+  }
+
   // ─── Build ────────────────────────────────────────────────────────────────
 
   @override
@@ -379,7 +467,15 @@ class _MessageScreenState extends State<MessageScreen> {
       color: Colors.white,
       child: TextField(
         controller: _searchController,
-        onChanged: _controller.searchMessages,
+        onChanged: (query) {
+          _controller.searchMessages(query);
+          // Scroll to bottom after search to show latest matching messages
+          if (query.isNotEmpty) {
+            Future.delayed(const Duration(milliseconds: 100), () {
+              _scrollToBottom(animated: true);
+            });
+          }
+        },
         decoration: InputDecoration(
           hintText: 'Search messages...',
           prefixIcon: const Icon(Icons.search),
@@ -482,6 +578,16 @@ class _MessageScreenState extends State<MessageScreen> {
     required dynamic message,
     required _BubbleStyle style,
   }) {
+    final messageId = message.messageId.toString();
+    final bodyText = _stripHtmlTags(message.body);
+    final shouldCollapse = bodyText.length > 200;
+    
+    // Auto-expand if search query is found in the message
+    final hasSearchMatch = _controller.searchQuery.value.isNotEmpty &&
+        bodyText.toLowerCase().contains(_controller.searchQuery.value);
+    
+    final isExpanded = _expandedMessages[messageId] ?? hasSearchMatch;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -500,14 +606,60 @@ class _MessageScreenState extends State<MessageScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HtmlWidget(
-                message.body,
-                textStyle: TextStyle(
-                  fontSize: 14,
-                  color: style.textColor,
-                  height: 1.4,
+              if (shouldCollapse && !isExpanded)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHighlightedHtml(
+                      _truncateHtml(message.body, 200),
+                      style.textColor,
+                    ),
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _expandedMessages[messageId] = true;
+                        });
+                      },
+                      child: Text(
+                        '...Show more',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: style.textColor.withOpacity(0.8),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHighlightedHtml(
+                      message.body,
+                      style.textColor,
+                    ),
+                    if (shouldCollapse && isExpanded) ...[
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _expandedMessages[messageId] = false;
+                          });
+                        },
+                        child: Text(
+                          'Show less',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: style.textColor.withOpacity(0.8),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
               if (message.hasAttachment) ...[
                 const SizedBox(height: 10),
                 GestureDetector(
@@ -557,6 +709,16 @@ class _MessageScreenState extends State<MessageScreen> {
     required dynamic message,
     required _BubbleStyle style,
   }) {
+    final messageId = message.messageId.toString();
+    final bodyText = _stripHtmlTags(message.body);
+    final shouldCollapse = bodyText.length > 200;
+    
+    // Auto-expand if search query is found in the message
+    final hasSearchMatch = _controller.searchQuery.value.isNotEmpty &&
+        bodyText.toLowerCase().contains(_controller.searchQuery.value);
+    
+    final isExpanded = _expandedMessages[messageId] ?? hasSearchMatch;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -575,14 +737,60 @@ class _MessageScreenState extends State<MessageScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HtmlWidget(
-                message.body,
-                textStyle: TextStyle(
-                  fontSize: 14,
-                  color: style.textColor,
-                  height: 1.4,
+              if (shouldCollapse && !isExpanded)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHighlightedHtml(
+                      _truncateHtml(message.body, 200),
+                      style.textColor,
+                    ),
+                    const SizedBox(height: 4),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _expandedMessages[messageId] = true;
+                        });
+                      },
+                      child: Text(
+                        '...Show more',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: style.textColor.withOpacity(0.7),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHighlightedHtml(
+                      message.body,
+                      style.textColor,
+                    ),
+                    if (shouldCollapse && isExpanded) ...[
+                      const SizedBox(height: 4),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _expandedMessages[messageId] = false;
+                          });
+                        },
+                        child: Text(
+                          'Show less',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: style.textColor.withOpacity(0.7),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-              ),
               if (message.hasAttachment) ...[
                 const SizedBox(height: 10),
                 GestureDetector(
