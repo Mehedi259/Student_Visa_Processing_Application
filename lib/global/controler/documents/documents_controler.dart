@@ -24,6 +24,7 @@ class DocumentsController extends GetxController {
 
   // Current selected document ID
   final currentDocumentId = ''.obs;
+  final currentDocumentMobileScanningDisabled = false.obs;
 
   @override
   void onInit() {

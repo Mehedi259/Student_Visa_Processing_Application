@@ -153,41 +153,48 @@ class _PassportScreenState extends State<PassportScreen> {
   Widget _buildFloatingButtons() {
     return Obx(() {
       final isUploading = _controller.isUploading.value;
+      final isScanningDisabled = _controller.currentDocumentMobileScanningDisabled.value;
 
       return Padding(
         padding: const EdgeInsets.only(bottom: 80),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            FloatingActionButton(
-              heroTag: 'document',
-              backgroundColor: const Color(0xFF375BA4),
-              child: isUploading
-                  ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
+            Opacity(
+              opacity: isScanningDisabled ? 0.4 : 1.0,
+              child: FloatingActionButton(
+                heroTag: 'document',
+                backgroundColor: const Color(0xFF375BA4),
+                onPressed: (isUploading || isScanningDisabled) ? null : _pickAndUploadDocument,
+                child: isUploading
+                    ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+                    : Image.asset(
+                  Assets.images.uploadAttachmentIcon.path,
                   color: Colors.white,
-                  strokeWidth: 2,
+                  width: 28,
                 ),
-              )
-                  : Image.asset(
-                Assets.images.uploadAttachmentIcon.path,
-                color: Colors.white,
-                width: 28,
               ),
-              onPressed: isUploading ? null : _pickAndUploadDocument,
             ),
             const SizedBox(width: 12),
-            FloatingActionButton(
-              heroTag: 'scan',
-              backgroundColor: const Color(0xFF375BA4),
-              child: Image.asset(
-                Assets.images.scanner.path,
-                color: Colors.white,
-                width: 28,
+            Opacity(
+              opacity: isScanningDisabled ? 0.4 : 1.0,
+              child: FloatingActionButton(
+                heroTag: 'scan',
+                backgroundColor: const Color(0xFF375BA4),
+                onPressed: isScanningDisabled ? null : () => context.push(RoutePath.passportScanner.addBasePath),
+                child: Image.asset(
+                  Assets.images.scanner.path,
+                  color: Colors.white,
+                  width: 28,
+                ),
               ),
-              onPressed: () => context.push(RoutePath.passportScanner.addBasePath),
             ),
           ],
         ),

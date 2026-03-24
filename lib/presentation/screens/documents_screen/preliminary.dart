@@ -141,17 +141,21 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
             itemCount: docs.documents.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final doc = docs.documents[index];
+              // Sort documents by displayOrder
+              final sortedDocs = List.from(docs.documents)
+                ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+              final doc = sortedDocs[index];
+              
               return _buildDocumentItem(
                 title: doc.title,
                 description: doc.shortDescription ??
                     'You will upload documentation for ${doc.title.toLowerCase()}.',
                 onPressed: () {
+                  _controller.currentDocumentMobileScanningDisabled.value = doc.mobileScanningDisabled;
                   _controller.fetchDocumentDetail(doc.studentDocumentId);
                   context.push(RoutePath.passport.addBasePath);
                 },
-                isComplete: doc.status.toLowerCase() == 'scanapproved' ||
-                    doc.status.toLowerCase() == 'complete',
+                status: doc.status,
                 width: width,
               );
             },
@@ -164,10 +168,31 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
   Widget _buildDocumentItem({
     required String title,
     required String description,
-    required bool isComplete,
+    required String status,
     required VoidCallback onPressed,
     required double width,
   }) {
+    // Determine status icon based on status value
+    ImageProvider statusIcon;
+    
+    switch (status.toLowerCase()) {
+      case 'complete':
+      case 'scanapproved':
+        statusIcon = Assets.images.correct.provider(); // Green checkmark
+        break;
+      case 'incomplete':
+        statusIcon = Assets.images.cross.provider(); // Red cross
+        break;
+      case 'partiallycomplete':
+        statusIcon = Assets.images.alert.provider(); // Yellow triangle
+        break;
+      case 'pending':
+      case 'initial':
+      default:
+        statusIcon = Assets.images.cross.provider(); // Red cross for pending/initial
+        break;
+    }
+
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onPressed,
@@ -209,9 +234,7 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
               width: 26,
               height: 26,
               child: Image(
-                image: isComplete
-                    ? Assets.images.correct.provider()
-                    : Assets.images.cross.provider(),
+                image: statusIcon,
               ),
             ),
             const SizedBox(width: 6),

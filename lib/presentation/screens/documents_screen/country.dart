@@ -138,16 +138,18 @@ class _CountryScreenState extends State<CountryScreen> {
             itemCount: docs.documents.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
-              final doc = docs.documents[index];
+              // Sort documents by displayOrder
+              final sortedDocs = List.from(docs.documents)
+                ..sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+              final doc = sortedDocs[index];
+              
               return _buildDocumentItem(
                 title: doc.title,
                 description: doc.shortDescription ??
                     'Upload required documentation for ${doc.title.toLowerCase()}.',
-                isComplete: doc.status.toLowerCase() == 'scanapproved' ||
-                    doc.status.toLowerCase() == 'complete',
-                hasWarning: doc.status.toLowerCase() == 'pending' ||
-                    doc.status.toLowerCase() == 'partiallycomplete',
+                status: doc.status,
                 onTap: () {
+                  _controller.currentDocumentMobileScanningDisabled.value = doc.mobileScanningDisabled;
                   _controller.fetchDocumentDetail(doc.studentDocumentId);
                   context.push(RoutePath.schoolAcceptanceScannerScreen.addBasePath);
                 },
@@ -162,17 +164,28 @@ class _CountryScreenState extends State<CountryScreen> {
   Widget _buildDocumentItem({
     required String title,
     required String description,
-    required bool isComplete,
-    bool hasWarning = false,
+    required String status,
     required VoidCallback onTap,
   }) {
+    // Determine status icon based on status value
     AssetGenImage icon;
-    if (isComplete) {
-      icon = Assets.images.correct;
-    } else if (hasWarning) {
-      icon = Assets.images.alert;
-    } else {
-      icon = Assets.images.cross;
+    
+    switch (status.toLowerCase()) {
+      case 'complete':
+      case 'scanapproved':
+        icon = Assets.images.correct; // Green checkmark
+        break;
+      case 'incomplete':
+        icon = Assets.images.cross; // Red cross
+        break;
+      case 'partiallycomplete':
+        icon = Assets.images.alert; // Yellow triangle
+        break;
+      case 'pending':
+      case 'initial':
+      default:
+        icon = Assets.images.cross; // Red cross for pending/initial
+        break;
     }
 
     return GestureDetector(

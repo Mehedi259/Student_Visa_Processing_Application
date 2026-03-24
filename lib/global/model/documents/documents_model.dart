@@ -117,12 +117,16 @@ class DocumentItem {
   final String title;
   final String? shortDescription;
   final String status;
+  final bool mobileScanningDisabled;
+  final double displayOrder;
 
   DocumentItem({
     required this.studentDocumentId,
     required this.title,
     this.shortDescription,
     required this.status,
+    required this.mobileScanningDisabled,
+    required this.displayOrder,
   });
 
   factory DocumentItem.fromJson(Map<String, dynamic> json) {
@@ -131,6 +135,8 @@ class DocumentItem {
       title: json['title'] ?? '',
       shortDescription: json['shortDescription'],
       status: json['status'] ?? 'Initial',
+      mobileScanningDisabled: json['mobileScanningDisabled'] ?? false,
+      displayOrder: (json['displayOrder'] ?? 0).toDouble(),
     );
   }
 
@@ -140,6 +146,8 @@ class DocumentItem {
       'title': title,
       'shortDescription': shortDescription,
       'status': status,
+      'mobileScanningDisabled': mobileScanningDisabled,
+      'displayOrder': displayOrder,
     };
   }
 }
