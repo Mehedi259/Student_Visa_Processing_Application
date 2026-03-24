@@ -115,6 +115,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         progress: dashboard.preliminaryDocuments.completed,
                         total: dashboard.preliminaryDocuments.total,
                         status: _getStatus(dashboard.preliminaryDocuments.status),
+                        isReadOnly: dashboard.preliminaryDocuments.isReadOnly,
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.016),
                       _buildDocumentCard(
@@ -128,6 +129,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         progress: dashboard.studentDocuments.completed,
                         total: dashboard.studentDocuments.total,
                         status: _getStatus(dashboard.studentDocuments.status),
+                        isReadOnly: dashboard.studentDocuments.isReadOnly,
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.016),
                       _buildDocumentCard(
@@ -143,6 +145,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
                         status: _getStatus(dashboard.countryDocuments.status),
                         isCountryFlag: true,
                         countryFlagUrl: dashboard.countryFlagUrl,
+                        isReadOnly: dashboard.countryDocuments.isReadOnly,
                       ),
                       SizedBox(height: MediaQuery.of(context).size.height * 0.12),
                     ],
@@ -182,6 +185,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     required VoidCallback onTap,
     bool isCountryFlag = false,
     String? countryFlagUrl,
+    bool isReadOnly = false,
   }) {
     ImageProvider? statusImage;
     double statusIconSize = 20;
@@ -208,24 +212,29 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final progressFontSize = screenWidth * 0.045;
 
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: double.infinity,
-        constraints: BoxConstraints(
-          maxWidth: screenWidth > 600 ? 500 : double.infinity,
-          minHeight: screenHeight * 0.14,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF5F5F7),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: cardHorizontalPadding,
-          vertical: cardVerticalPadding,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      onTap: isReadOnly ? null : onTap,
+      child: Opacity(
+        opacity: isReadOnly ? 0.5 : 1.0,
+        child: Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            maxWidth: screenWidth > 600 ? 500 : double.infinity,
+            minHeight: screenHeight * 0.14,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF5F5F7),
+            borderRadius: BorderRadius.circular(10),
+            border: isReadOnly
+                ? Border.all(color: const Color(0xFFE0E0E0), width: 1)
+                : null,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: cardHorizontalPadding,
+            vertical: cardVerticalPadding,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Icon
             Container(
               width: iconSize,
@@ -340,6 +349,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );

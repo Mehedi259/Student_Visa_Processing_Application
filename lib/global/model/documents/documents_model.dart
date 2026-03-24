@@ -45,11 +45,13 @@ class DocumentCategory {
   final int total;
   final int completed;
   final String status;
+  final bool isReadOnly;
 
   DocumentCategory({
     required this.total,
     required this.completed,
     required this.status,
+    required this.isReadOnly,
   });
 
   factory DocumentCategory.fromJson(Map<String, dynamic> json) {
@@ -57,6 +59,7 @@ class DocumentCategory {
       total: json['total'] ?? 0,
       completed: json['completed'] ?? 0,
       status: json['status'] ?? 'Pending',
+      isReadOnly: json['isReadOnly'] ?? false,
     );
   }
 
@@ -65,6 +68,7 @@ class DocumentCategory {
       'total': total,
       'completed': completed,
       'status': status,
+      'isReadOnly': isReadOnly,
     };
   }
 }
