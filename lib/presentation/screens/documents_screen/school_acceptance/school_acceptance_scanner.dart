@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get/get.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
@@ -143,22 +142,12 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          '${_scannedPages.length}/10',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share, color: Colors.white),
-                        onPressed: _shareDocument,
-                      ),
-                    ],
+                  Text(
+                    '${_scannedPages.length}/10',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -188,8 +177,19 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
                     children: [
                       Expanded(
                         child: _buildBottomButton(
+                          icon: Icons.close,
+                          label: 'Disregard',
+                          onTap: () {
+                            Navigator.pop(dialogContext);
+                            _navigateBack();
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildBottomButton(
                           icon: Icons.note_add,
-                          label: 'add pages',
+                          label: 'Add Page',
                           onTap: () {
                             Navigator.pop(dialogContext);
                             _addMorePages();
@@ -199,19 +199,8 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildBottomButton(
-                          icon: Icons.edit,
-                          label: 'Edit',
-                          onTap: () {
-                            Navigator.pop(dialogContext);
-                            _showImagePreview();
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildBottomButton(
                           icon: Icons.upload_file,
-                          label: 'Upload as PDF',
+                          label: 'Upload',
                           onTap: () {
                             Navigator.pop(dialogContext);
                             _uploadAsPDF();
@@ -302,96 +291,6 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
     } catch (e) {
       setState(() => _isScanning = false);
     }
-  }
-
-  void _showImagePreview() {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.black,
-        insetPadding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 600),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  color: const Color(0xFF5B7FBF),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Expanded(
-                        child: Text('Preview',
-                            textAlign: TextAlign.center,
-                            style:
-                            TextStyle(color: Colors.white, fontSize: 18)),
-                      ),
-                      const SizedBox(width: 48)
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 500,
-                  child: PageView.builder(
-                    itemCount: _scannedPages.length,
-                    itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          Expanded(
-                            child: InteractiveViewer(
-                              child: Image.file(
-                                File(_scannedPages[index]),
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            color: Colors.black87,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Page ${index + 1} of ${_scannedPages.length}',
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                                ElevatedButton.icon(
-                                  onPressed: () {
-                                    setState(() {
-                                      _scannedPages.removeAt(index);
-                                    });
-                                    Navigator.pop(context);
-
-                                    if (_scannedPages.isNotEmpty) {
-                                      _showImagePreview();
-                                    } else {
-                                      _navigateBack();
-                                    }
-                                  },
-                                  icon: const Icon(Icons.delete),
-                                  label: const Text('Delete'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   Future<void> _uploadAsPDF() async {
@@ -538,21 +437,6 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
         SnackbarUtils.showError(context, 'Error creating PDF: $e');
       }
     }
-  }
-
-  Future<void> _shareDocument() async {
-    if (_scannedPages.isEmpty) return;
-
-    try {
-      final List<XFile> files =
-      _scannedPages.map((path) => XFile(path)).toList();
-
-      await Share.shareXFiles(
-        files,
-        subject: _titleController.text,
-        text: _descriptionController.text,
-      );
-    } catch (_) {}
   }
 
   @override
