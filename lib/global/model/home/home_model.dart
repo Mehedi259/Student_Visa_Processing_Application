@@ -4,6 +4,7 @@ class DashboardModel {
   final String id;
   final String firstName;
   final String lastName;
+  final String? nickname;
   final GaugeModel legalEntryGauge;
   final GaugeModel ticketingGauge;
   final String documentDeadline;
@@ -13,6 +14,7 @@ class DashboardModel {
     required this.id,
     required this.firstName,
     required this.lastName,
+    this.nickname,
     required this.legalEntryGauge,
     required this.ticketingGauge,
     required this.documentDeadline,
@@ -24,6 +26,7 @@ class DashboardModel {
       id: json['id'] ?? '',
       firstName: json['firstName'] ?? '',
       lastName: json['lastName'] ?? '',
+      nickname: json['nickName'],
       legalEntryGauge: GaugeModel.fromJson(json['legalEntryGauge'] ?? {}),
       ticketingGauge: GaugeModel.fromJson(json['ticketingGauge'] ?? {}),
       documentDeadline: json['documentDeadline'] ?? '',
@@ -36,6 +39,7 @@ class DashboardModel {
       'id': id,
       'firstName': firstName,
       'lastName': lastName,
+      'nickName': nickname,
       'legalEntryGauge': legalEntryGauge.toJson(),
       'ticketingGauge': ticketingGauge.toJson(),
       'documentDeadline': documentDeadline,
@@ -44,6 +48,8 @@ class DashboardModel {
   }
 
   String get fullName => '$firstName $lastName';
+  
+  String get displayName => firstName;
 }
 
 class GaugeModel {

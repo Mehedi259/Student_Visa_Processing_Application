@@ -18,6 +18,7 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final studentController = Get.put(StudentInformationController());
+    final homeController = Get.find<HomeController>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDFDFD),
@@ -65,9 +66,7 @@ class SettingsScreen extends StatelessWidget {
                         ),
                         child: Center(
                           child: Obx(() => Text(
-                            studentController.studentInfo.value?.preferredName?.isEmpty ?? true
-                                ? 'Student Name'
-                                : studentController.studentInfo.value!.preferredName!,
+                            homeController.fullName,
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,

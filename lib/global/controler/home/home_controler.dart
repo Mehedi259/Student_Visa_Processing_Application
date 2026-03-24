@@ -100,10 +100,13 @@ class HomeController extends GetxController {
     }
   }
 
-  /// Get display name (preferredName from StudentInformation API)
+  /// Get display name for Home page (firstName only from Dashboard API)
   String get displayName {
-    return studentInfo.value?.preferredName ??
-        dashboardData.value?.fullName ??
-        'User';
+    return dashboardData.value?.displayName ?? 'User';
+  }
+  
+  /// Get full name for Settings page (firstName + lastName from Dashboard API)
+  String get fullName {
+    return dashboardData.value?.fullName ?? 'User';
   }
 }
