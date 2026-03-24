@@ -89,18 +89,20 @@ class _DestinationScreenState extends State<DestinationScreen> {
                 _buildExpandableCard(
                   image: Assets.images.importantDates.provider(),
                   title: 'Important Dates',
-                  content: data.importantDates,
+                  content: data.formattedImportantDates,
                   isExpanded: controller.isImportantDatesExpanded,
                   onToggle: controller.toggleImportantDates,
+                  iconSize: 18,
                 ),
                 const SizedBox(height: 12),
 
                 _buildExpandableCard(
                   image: Assets.images.instructionForDocumentSubmission.provider(),
-                  title: 'Instructions for Document\nSubmission',
+                  title: 'Application Submission',
                   content: data.instructionsForDocumentSubmission,
                   isExpanded: controller.isInstructionsExpanded,
                   onToggle: controller.toggleInstructions,
+                  iconSize: 20,
                 ),
                 const SizedBox(height: 12),
 
@@ -226,7 +228,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
                       '${data.countryName} Summary',
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
                     ),
@@ -306,6 +308,7 @@ class _DestinationScreenState extends State<DestinationScreen> {
     required String content,
     required RxBool isExpanded,
     required VoidCallback onToggle,
+    double iconSize = 24,
   }) {
     return Obx(() => Container(
       decoration: BoxDecoration(
@@ -328,8 +331,8 @@ class _DestinationScreenState extends State<DestinationScreen> {
               child: Row(
                 children: [
                   Container(
-                    width: 24,
-                    height: 24,
+                    width: iconSize,
+                    height: iconSize,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
                       image: DecorationImage(

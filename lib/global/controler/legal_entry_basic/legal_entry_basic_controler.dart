@@ -23,6 +23,17 @@ class LegalEntryBasicController extends GetxController {
     super.onInit();
     fetchLegalEntryBasics();
   }
+  
+  @override
+  void onClose() {
+    // Reset all dropdowns except country summary when leaving the page
+    isImportantDatesExpanded.value = false;
+    isInstructionsExpanded.value = false;
+    isConsulateExpanded.value = false;
+    isImportantNotesExpanded.value = false;
+    isPostArrivalExpanded.value = false;
+    super.onClose();
+  }
 
   /// Fetch Legal Entry Basics
   Future<void> fetchLegalEntryBasics() async {
