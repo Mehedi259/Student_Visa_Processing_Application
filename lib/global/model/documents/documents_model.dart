@@ -158,6 +158,7 @@ class DocumentDetail {
   final String instructions;
   final String keyTips;
   final String? sampleUrl;
+  final String? blankFormUrl;
   final List<String> requirements;
   final List<DocumentUpdate> documentUpdates;
   final List<DocumentUpload> documentUploads;
@@ -168,6 +169,7 @@ class DocumentDetail {
     required this.instructions,
     required this.keyTips,
     this.sampleUrl,
+    this.blankFormUrl,
     required this.requirements,
     required this.documentUpdates,
     required this.documentUploads,
@@ -180,6 +182,7 @@ class DocumentDetail {
       instructions: json['instructions'] ?? '',
       keyTips: json['keyTips'] ?? '',
       sampleUrl: json['sampleUrl'],
+      blankFormUrl: json['blankFormUrl'],
       requirements: (json['requirements'] as List?)?.cast<String>() ?? [],
       documentUpdates: (json['documentUpdates'] as List?)
           ?.map((e) => DocumentUpdate.fromJson(e as Map<String, dynamic>))
@@ -199,6 +202,7 @@ class DocumentDetail {
       'instructions': instructions,
       'keyTips': keyTips,
       'sampleUrl': sampleUrl,
+      'blankFormUrl': blankFormUrl,
       'requirements': requirements,
       'documentUpdates': documentUpdates.map((e) => e.toJson()).toList(),
       'documentUploads': documentUploads.map((e) => e.toJson()).toList(),

@@ -231,6 +231,25 @@ class _DetailsTabState extends State<DetailsTab> {
 
             const SizedBox(height: 14),
 
+            // Blank Form Section
+            if (detail.blankFormUrl != null && detail.blankFormUrl!.isNotEmpty)
+              _buildSimpleCard(
+                iconAsset: Assets.images.sampleDocument,
+                title: 'Blank Form',
+                trailing: const Text(
+                  'Download',
+                  style: TextStyle(
+                      color: Color(0xFF375BA4),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500),
+                ),
+                onTap: () {
+                  _launchURL(detail.blankFormUrl!);
+                },
+              ),
+
+            const SizedBox(height: 14),
+
             // Key Tips Section
             if (detail.keyTips.isNotEmpty)
               _buildExpandableCard(
