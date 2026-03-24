@@ -53,6 +53,8 @@ class ApiConstants {
       "/LongTermStudent/DocumentDetail/$id";
   static String documentUpload(String id) =>
       "/LongTermStudent/DocumentUpload/$id";
+  static String deleteDocumentUpload(String documentUploadId) =>
+      "/LongTermStudent/StudentDocumentUploads/$documentUploadId";
 
   // Message Endpoints
   static const String studentMessages = "/LongTermStudent/StudentMessages";

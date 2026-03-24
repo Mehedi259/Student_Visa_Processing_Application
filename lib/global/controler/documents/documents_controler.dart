@@ -194,6 +194,34 @@ class DocumentsController extends GetxController {
     }
   }
 
+  /// Delete Document Upload
+  Future<bool> deleteDocumentUpload(String documentUploadId) async {
+    try {
+      developer.log('🗑️ Starting document upload deletion',
+          name: 'DocumentsController');
+      developer.log('📄 Document Upload ID: $documentUploadId',
+          name: 'DocumentsController');
+
+      await DocumentsService.deleteDocumentUpload(documentUploadId);
+
+      developer.log('✅ Delete successful', name: 'DocumentsController');
+
+      // Refresh document detail after deletion
+      if (currentDocumentId.value.isNotEmpty) {
+        await fetchDocumentDetail(currentDocumentId.value);
+      }
+
+      // Refresh dashboard to update counts
+      await fetchDocumentsDashboard();
+
+      return true;
+    } catch (e, stackTrace) {
+      developer.log('❌ Delete error: $e',
+          name: 'DocumentsController', error: e, stackTrace: stackTrace);
+      rethrow;
+    }
+  }
+
   /// Get status enum from string
   String getStatusFromString(String status) {
     switch (status.toLowerCase()) {

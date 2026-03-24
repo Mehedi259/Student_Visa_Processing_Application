@@ -243,33 +243,41 @@ class DocumentUpdate {
 }
 
 class DocumentUpload {
+  final String documentUploadId;
   final String url;
   final String description;
   final String createdOn;
   final String createdBy;
+  final bool deleteEnabled;
 
   DocumentUpload({
+    required this.documentUploadId,
     required this.url,
     required this.description,
     required this.createdOn,
     required this.createdBy,
+    required this.deleteEnabled,
   });
 
   factory DocumentUpload.fromJson(Map<String, dynamic> json) {
     return DocumentUpload(
+      documentUploadId: json['documentUploadId'] ?? '',
       url: json['url'] ?? '',
       description: json['description'] ?? '',
       createdOn: json['createdOn'] ?? '',
       createdBy: json['createdBy'] ?? '',
+      deleteEnabled: json['deleteEnabled'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'documentUploadId': documentUploadId,
       'url': url,
       'description': description,
       'createdOn': createdOn,
       'createdBy': createdBy,
+      'deleteEnabled': deleteEnabled,
     };
   }
 }

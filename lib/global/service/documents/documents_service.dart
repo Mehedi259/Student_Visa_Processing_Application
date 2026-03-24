@@ -193,6 +193,29 @@ class DocumentsService {
     }
   }
 
+  /// Delete Document Upload
+  static Future<void> deleteDocumentUpload(String documentUploadId) async {
+    try {
+      final token = await StorageHelper.getToken();
+      final uri = Uri.parse(
+          "${ApiConstants.baseUrl}${ApiConstants.deleteDocumentUpload(documentUploadId)}");
+
+      developer.log('📤 DELETE Request to: $uri', name: 'DocumentsService');
+
+      final response = await http.delete(uri, headers: _headers(token));
+
+      developer.log('📥 Response Status: ${response.statusCode}',
+          name: 'DocumentsService');
+      developer.log('📥 Response Body: ${response.body}',
+          name: 'DocumentsService');
+
+      _processResponse(response);
+    } catch (e) {
+      developer.log('❌ DELETE Error: $e', name: 'DocumentsService');
+      throw Exception("Failed to delete document upload: $e");
+    }
+  }
+
   /// Headers with Token
   static Map<String, String> _headers(String? token) {
     final cleaned = token?.trim() ?? "";
