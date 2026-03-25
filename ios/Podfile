@@ -1,5 +1,5 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# Define a global platform for your project
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -29,8 +29,10 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
+  use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
   target 'RunnerTests' do
     inherit! :search_paths
   end
@@ -39,22 +41,37 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-    
-    # Enable dSYM generation for all pods
+
     target.build_configurations.each do |config|
+      # Enable dSYM generation for all pods
       config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
       config.build_settings['ONLY_ACTIVE_ARCH'] = 'NO'
-      
-      # Skip dSYM stripping for objective_c framework
+
+      # --- IMPORTANT: Permission Handler Configuration ---
+      # This section explicitly enables specific permissions in the compiled app.
+      # Setting a permission to 1 includes the code; 0 excludes it.
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+
+        ## Camera and Gallery Permissions
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_MICROPHONE=1',
+
+        ## Biometric (Face ID) Permission
+        'PERMISSION_BIOMETRICS=1',
+
+        ## Other permissions (Set to 1 if needed in the future)
+        'PERMISSION_NOTIFICATIONS=0',
+        'PERMISSION_LOCATION=0',
+      ]
+      # --- End of Permission Configuration ---
+
+      # Skip dSYM stripping for objective_c framework to avoid build errors
       if target.name == 'objective_c'
         config.build_settings['STRIP_INSTALLED_PRODUCT'] = 'NO'
         config.build_settings['COPY_PHASE_STRIP'] = 'NO'
       end
     end
-  end
-  
-  # Generate missing dSYMs for system frameworks
-  installer.pods_project.build_configurations.each do |config|
-    config.build_settings['DEBUG_INFORMATION_FORMAT'] = 'dwarf-with-dsym'
   end
 end

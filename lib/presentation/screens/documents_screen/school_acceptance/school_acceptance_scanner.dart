@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'dart:developer' as developer;
 
 import '../../../../core/custom_assets/assets.gen.dart';
@@ -69,10 +70,85 @@ class _SchoolAcceptanceScannerState extends State<SchoolAcceptanceScanner> {
     }
   }
 
+  void _showPermissionDialog({required bool isPermanentlyDenied}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) => AlertDialog(
+        title: const Text('Camera Permission Required'),
+        content: Text(
+          isPermanentlyDenied
+              ? 'Camera access is required to scan documents. Please enable it in Settings:\n\n1. Open Settings\n2. Find this app\n3. Enable Camera permission'
+              : 'This app needs camera access to scan documents. Please grant permission to continue.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              _navigateBack();
+            },
+            child: const Text('Cancel'),
+          ),
+          if (isPermanentlyDenied)
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await openAppSettings();
+                _navigateBack();
+              },
+              child: const Text('Open Settings'),
+            )
+          else
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                _startScanning();
+              },
+              child: const Text('Try Again'),
+            ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _startScanning() async {
     if (!mounted) return;
 
-    setState(() => _isScanning = true);
+    try {
+      // Request camera permission
+      final cameraStatus = await Permission.camera.request();
+      
+      // Check if permission is granted or limited (iOS)
+      if (cameraStatus.isGranted || cameraStatus.isLimited) {
+        // Permission granted, proceed with scanning
+        setState(() => _isScanning = true);
+        _proceedWithScanning();
+        return;
+      }
+      
+      // Handle permanent denial - user needs to go to settings
+      if (cameraStatus.isPermanentlyDenied) {
+        if (mounted) {
+          _showPermissionDialog(isPermanentlyDenied: true);
+        }
+        return;
+      }
+      
+      // Handle regular denial
+      if (cameraStatus.isDenied) {
+        if (mounted) {
+          _showPermissionDialog(isPermanentlyDenied: false);
+        }
+        return;
+      }
+    } catch (e) {
+      if (mounted) {
+        SnackbarUtils.showError(context, 'Error requesting camera permission');
+        _navigateBack();
+      }
+    }
+  }
+
+  Future<void> _proceedWithScanning() async {
 
     try {
       List<String> pictures = [];
