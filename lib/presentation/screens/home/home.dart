@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routes/route_path.dart';
 import '../../../core/routes/routes.dart';
 import '../../../global/controler/home/home_controler.dart';
+import '../../../global/controler/massage/massage_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _ticketingController;
   late Animation<double> _legalEntryAnimation;
   late Animation<double> _ticketingAnimation;
+  bool _isLoadingMessages = false;
 
   @override
   void initState() {
@@ -374,8 +376,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
-                                onPressed: () => context
-                                    .push(RoutePath.massageScreen.addBasePath),
+                                onPressed: _isLoadingMessages
+                                    ? null
+                                    : () async {
+                                        setState(() {
+                                          _isLoadingMessages = true;
+                                        });
+
+                                        try {
+                                          // Reload messages before navigating
+                                          // Check if MessageController exists, if not create it
+                                          MessageController messageController;
+                                          if (Get.isRegistered<MessageController>()) {
+                                            messageController = Get.find<MessageController>();
+                                          } else {
+                                            messageController = Get.put(MessageController());
+                                          }
+                                          await messageController.loadMessages(refresh: true);
+                                          
+                                          if (mounted) {
+                                            setState(() {
+                                              _isLoadingMessages = false;
+                                            });
+                                          }
+                                          
+                                          if (context.mounted) {
+                                            context.push(RoutePath.massageScreen.addBasePath);
+                                          }
+                                        } catch (e) {
+                                          if (mounted) {
+                                            setState(() {
+                                              _isLoadingMessages = false;
+                                            });
+                                          }
+                                        }
+                                      },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF5B7FBF),
                                   foregroundColor: Colors.white,
@@ -383,14 +418,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
+                                  disabledBackgroundColor: const Color(0xFF5B7FBF).withOpacity(0.7),
                                 ),
-                                child: const Text(
-                                  'View Messages',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                child: _isLoadingMessages
+                                    ? const SizedBox(
+                                        width: 24,
+                                        height: 24,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.5,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'View Messages',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                               ),
                             ),
                           ],

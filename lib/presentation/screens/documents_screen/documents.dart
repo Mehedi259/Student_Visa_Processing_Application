@@ -9,7 +9,7 @@ import '../../../global/controler/documents/documents_controler.dart';
 import '../../widgets/custom_navigation/custom_navbar.dart';
 import '../../../core/custom_assets/assets.gen.dart';
 
-enum DocumentStatus { complete, incomplete, warning }
+enum DocumentStatus { complete, incomplete, warning, pending }
 
 class DocumentsScreen extends StatefulWidget {
   const DocumentsScreen({super.key});
@@ -166,10 +166,12 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
       case 'scanapproved':
         return DocumentStatus.complete;
       case 'incomplete':
-      case 'partiallycomplete':
         return DocumentStatus.incomplete;
+      case 'partiallycomplete':
+        return DocumentStatus.warning;
       case 'pending':
       case 'initial':
+        return DocumentStatus.pending;
       default:
         return DocumentStatus.warning;
     }
@@ -198,6 +200,9 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     } else if (status == DocumentStatus.incomplete) {
       statusImage = Assets.images.cross.provider();
       statusIconSize = 16;
+    } else if (status == DocumentStatus.pending) {
+      statusImage = Assets.images.pending.provider();
+      statusIconSize = 20;
     }
 
     final screenWidth = MediaQuery.of(context).size.width;

@@ -185,8 +185,10 @@ class _StudentScreenState extends State<StudentScreen> {
         break;
       case 'pending':
       case 'initial':
+        icon = Assets.images.pending; // Pending icon
+        break;
       default:
-        icon = Assets.images.cross; // Red cross for pending/initial
+        icon = Assets.images.cross; // Red cross for unknown status
         break;
     }
 

@@ -183,8 +183,10 @@ class _CountryScreenState extends State<CountryScreen> {
         break;
       case 'pending':
       case 'initial':
+        icon = Assets.images.pending; // Pending icon
+        break;
       default:
-        icon = Assets.images.cross; // Red cross for pending/initial
+        icon = Assets.images.cross; // Red cross for unknown status
         break;
     }
 

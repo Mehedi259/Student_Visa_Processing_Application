@@ -362,8 +362,9 @@ class StatusTab extends StatelessWidget {
       case 'incomplete':
         return Assets.images.cross.path;
       case 'partiallycomplete':
-      case 'pending':
         return Assets.images.alert.path;
+      case 'pending':
+        return Assets.images.pending.path;
       default:
         return Assets.images.incomplete.path;
     }

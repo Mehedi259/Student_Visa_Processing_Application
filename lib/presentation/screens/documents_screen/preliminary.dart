@@ -188,8 +188,10 @@ class _PreliminaryScreenState extends State<PreliminaryScreen> {
         break;
       case 'pending':
       case 'initial':
+        statusIcon = Assets.images.pending.provider(); // Pending icon
+        break;
       default:
-        statusIcon = Assets.images.cross.provider(); // Red cross for pending/initial
+        statusIcon = Assets.images.cross.provider(); // Red cross for unknown status
         break;
     }
 

@@ -11,6 +11,16 @@
 
 import 'package:flutter/widgets.dart';
 
+class $AssetsIconsGen {
+  const $AssetsIconsGen();
+
+  /// File path: assets/icons/app_icon.png
+  AssetGenImage get appIcon => const AssetGenImage('assets/icons/app_icon.png');
+
+  /// List of all assets
+  List<AssetGenImage> get values => [appIcon];
+}
+
 class $AssetsImagesGen {
   const $AssetsImagesGen();
 
@@ -123,6 +133,9 @@ class $AssetsImagesGen {
   AssetGenImage get homeInactive =>
       const AssetGenImage('assets/images/homeInactive.png');
 
+  /// File path: assets/images/ij.png
+  AssetGenImage get ij => const AssetGenImage('assets/images/ij.png');
+
   /// File path: assets/images/importantDates.png
   AssetGenImage get importantDates =>
       const AssetGenImage('assets/images/importantDates.png');
@@ -189,6 +202,9 @@ class $AssetsImagesGen {
   /// File path: assets/images/penIcon.png
   AssetGenImage get penIcon => const AssetGenImage('assets/images/penIcon.png');
 
+  /// File path: assets/images/pending.png
+  AssetGenImage get pending => const AssetGenImage('assets/images/pending.png');
+
   /// File path: assets/images/phone.png
   AssetGenImage get phone => const AssetGenImage('assets/images/phone.png');
 
@@ -211,7 +227,6 @@ class $AssetsImagesGen {
   /// File path: assets/images/profileInactive.png
   AssetGenImage get profileInactive =>
       const AssetGenImage('assets/images/profileInactive.png');
-
 
   /// File path: assets/images/requirements.png
   AssetGenImage get requirements =>
@@ -286,6 +301,7 @@ class $AssetsImagesGen {
         healthInsurance,
         homeActive,
         homeInactive,
+        ij,
         importantDates,
         importantNotes,
         incomplete,
@@ -303,6 +319,7 @@ class $AssetsImagesGen {
         notifications,
         passport,
         penIcon,
+        pending,
         phone,
         postArrivalinstructions,
         preliminary,
@@ -326,6 +343,7 @@ class $AssetsImagesGen {
 class Assets {
   const Assets._();
 
+  static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
 }
 
