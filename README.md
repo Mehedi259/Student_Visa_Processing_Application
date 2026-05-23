@@ -1,181 +1,199 @@
-# iywt folder structure
+# IYWT - Exchange Mobile Application
 
-lib
-├── main.dart
-├── core
-│   ├── custom_assets
-│   │  
-│   ├── network
-│   │   └── connection_checker.dart
-│   ├── routes
-│   │   ├── routes.dart
-│   │   ├── route_observer.dart
-│   │   └── route_path.dart
-│   └── theme
+A comprehensive Flutter-based mobile application designed for international student exchange programs, providing seamless document management, communication, and administrative features.
+
+## Overview
+
+IYWT is a production-ready mobile application built with Flutter, offering a robust platform for managing student exchange programs. The application features a clean architecture, comprehensive authentication system, document scanning capabilities, and real-time messaging functionality.
+
+## Key Features
+
+- **Authentication & Security**
+  - Email/Password authentication with OTP verification
+  - Social login (Google Sign-In, Apple Sign-In)
+  - Biometric authentication support
+  - Secure password reset flow
+
+- **Document Management**
+  - Intelligent document scanning with OCR
+  - Multi-format document support (PDF, images)
+  - Document categorization (passport, certificates, transcripts)
+  - Cloud-based document storage and retrieval
+  - QR code generation for documents
+
+- **Student Portal**
+  - Comprehensive student profile management
+  - Legal entry and destination tracking
+  - Country-specific information and requirements
+  - Academic records management
+
+- **Communication**
+  - Real-time messaging system
+  - Push notifications
+  - Technical support integration
+
+- **Settings & Preferences**
+  - Multi-language support
+  - Profile customization
+  - Address, email, and phone management
+  - Privacy policy and terms of service
+
+## Technical Stack
+
+### Core Technologies
+- **Framework**: Flutter 3.6.0+
+- **Language**: Dart
+- **State Management**: GetX
+- **Routing**: GoRouter
+- **Dependency Injection**: GetIt
+
+### Key Dependencies
+- **UI/UX**: flutter_screenutil, google_fonts, shimmer, auto_size_text
+- **Networking**: http, cached_network_image
+- **Authentication**: google_sign_in, sign_in_with_apple, local_auth
+- **Document Processing**: cunning_document_scanner, pdf, file_picker
+- **Media**: image_picker, camera
+- **Storage**: shared_preferences, path_provider
+- **Utilities**: logger, url_launcher, intl, qr_flutter
+
+## Architecture
+
+The project follows a clean, modular architecture with clear separation of concerns:
+
+```
+lib/
+├── core/                    # Core functionality and infrastructure
+│   ├── custom_assets/       # Generated asset classes
+│   ├── network/             # Network connectivity management
+│   └── routes/              # Application routing configuration
 │
+├── global/                  # Shared application logic
+│   ├── constant/            # API constants and configuration
+│   ├── service/             # Business logic and API services
+│   │   ├── auth/            # Authentication services
+│   │   ├── documents/       # Document management services
+│   │   ├── home/            # Home screen services
+│   │   ├── massage/         # Messaging services
+│   │   ├── notification/    # Notification services
+│   │   └── settings/        # Settings and profile services
+│   ├── controler/           # State management controllers
+│   ├── model/               # Data models and entities
+│   ├── storage/             # Local storage management
+│   └── utils/               # Utility functions and helpers
 │
-├── global
-│   ├── constant
-│   │   └── api_constant.dart
-│   ├── service
-│   │   ├── api_services.dart
-│   │   ├── auth
-│   │   │   ├── login_service.dart
-│   │   │   ├── forget_password_service.dart
-│   │   │   ├── forget_password_otp_service.dart
-│   │   │   └── password_reset_service.dart
-│   │   ├── home
-│   │   │   └── home_service.dart
-│   │   ├── legal_entry_basic
-│   │   │   └── legal_entry_basic_service.dart
-│   │   ├── documents
-│   │   │   ├── documents_service.dart
-│   │   │   ├── preliminary_service.dart
-│   │   │   ├── student_service.dart
-│   │   │   ├── country_service.dart
-│   │   │   ├── passport_service.dart
-│   │   │   ├── scanner_service.dart
-│   │   │   └── edit_service.dart
-│   │   ├── massage
-│   │   │   └── massage_service.dart
-│   │   ├── settings
-│   │   │   ├── settings_service.dart
-│   │   │   ├── student_information_service.dart
-│   │   │   ├── address_service.dart
-│   │   │   ├── add_address_service.dart
-│   │   │   ├── email_service.dart
-│   │   │   ├── add_email_service.dart
-│   │   │   ├── phone_service.dart
-│   │   │   ├── add_phone_service.dart
-│   │   │   ├── address_service.dart
-│   │   │   ├── add_address_service.dart
-│   │   │   ├── change_password_service.dart
-│   │   │   └── tecnical_support_service.dart
-│   │   └── notification
-│   │       └── notification_service.dart
-│   ├── controler
-│   │   ├── auth
-│   │   │   ├── login_controler.dart
-│   │   │   ├── forget_password_controler.dart
-│   │   │   ├── forget_password_otp_controler.dart
-│   │   │   └── password_reset_controler.dart
-│   │   ├── home
-│   │   │   └── home_controler.dart
-│   │   ├── legal_entry_basic
-│   │   │   └── legal_entry_basic_controler.dart
-│   │   ├── documents
-│   │   │   ├── documents_controler.dart
-│   │   │   ├── preliminary_controler.dart
-│   │   │   ├── student_controler.dart
-│   │   │   ├── country_controler.dart
-│   │   │   ├── passport_controler.dart
-│   │   │   ├── scanner_controler.dart
-│   │   │   └── edit_controler.dart
-│   │   ├── massage
-│   │   │   └── massage_controler.dart
-│   │   ├── settings
-│   │   │   ├── settings_controler.dart
-│   │   │   ├── student_information_controler.dart
-│   │   │   ├── address_controler.dart
-│   │   │   ├── add_address_controler.dart
-│   │   │   ├── email_controler.dart
-│   │   │   ├── add_email_controler.dart
-│   │   │   ├── phone_controler.dart
-│   │   │   ├── add_phone_controler.dart
-│   │   │   ├── address_controler.dart
-│   │   │   ├── add_address_controler.dart
-│   │   │   ├── change_password_controler.dart
-│   │   │   └── tecnical_support_controler.dart
-│   │   └── notification
-│   │       └── notification_controler.dart
-│   ├── model
-│   │   ├── home
-│   │   │   └── home_model.dart
-│   │   ├── legal_entry_basic
-│   │   │   └── legal_entry_basic_model.dart
-│   │   ├── documents
-│   │   │   ├── documents_model.dart
-│   │   │   ├── preliminary_model.dart
-│   │   │   ├── student_model.dart
-│   │   │   ├── country_model.dart
-│   │   │   ├── passport_model.dart
-│   │   │   ├── scanner_model.dart
-│   │   │   └── edit_model.dart
-│   │   ├── massage
-│   │   │   └── massage_model.dart
-│   │   ├── settings
-│   │   │   ├── settings_model.dart
-│   │   │   ├── student_information_model.dart
-│   │   │   ├── address_model.dart
-│   │   │   ├── add_address_model.dart
-│   │   │   ├── email_model.dart
-│   │   │   ├── add_email_model.dart
-│   │   │   ├── phone_model.dart
-│   │   │   ├── add_phone_model.dart
-│   │   │   ├── address_model.dart
-│   │   │   ├── add_address_model.dart
-│   │   │   ├── change_password_model.dart
-│   │   │   └── tecnical_support_model.dart
-│   │   └── notification
-│   │       └── notification_model.dart
-│   └── storage
-│        └── storage_helper.dart
-│
-│
-└── presentation
-    ├── screens
-    │   ├── onbording
-    │   │   └── onboarding.dart
-    │   │
-    │   ├── authentication 
-    │   │   ├── login.dart
-    │   │   ├── forget_password.dart
-    │   │   ├── forget_password_otp.dart
-    │   │   ├── reset_password.dart  
-    │   │   └── reset_password_success.dart
-    │   │
-    │   ├── home   
-    │   │   └── home.dart
-    │   │       
-    │   │
-    │   ├── legal_entry_basic    
-    │   │   └── destination.dart
-    │   │
-    │   ├── documents_screen    
-    │   │   ├── documents.dart
-    │   │   ├── preliminary.dart
-    │   │   ├── student.dart
-    │   │   ├── country.dart
-    │   │   ├── passport.dart   
-    │   │   ├── scanner.dart
-    │   │   └── edit.dart
-    │   │
-    │   ├── massage_screen
-    │   │   └── massage_screen.dart
-    │   │
-    │   ├── settings
-    │   │   ├── settings.dart
-    │   │   ├── my_infomation.dart
-    │   │   ├── student_information.dart
-    │   │   ├── address.dart
-    │   │   ├── add_address.dart
-    │   │   ├── email.dart
-    │   │   ├── add_email.dart
-    │   │   ├── phone.dart
-    │   │   ├── add_phone.dart
-    │   │   ├── address.dart
-    │   │   ├── add_address.dart
-    │   │   ├── change_password.dart
-    │   │   ├── tecnical_support.dart
-    │   │   └── privacy_polcy.dart
-    │   │
-    │   └── notification
-    │       └── notification.dart
-    │    
-    │
-    └── widgets
-        └── custom_navigation
-            └── custom_navbar.dart
+└── presentation/            # UI layer
+    ├── screens/             # Application screens
+    │   ├── authentication/  # Login, registration, password reset
+    │   ├── documents_screen/# Document management UI
+    │   ├── home/            # Home dashboard
+    │   ├── legal_entry_basic/# Legal entry forms
+    │   ├── massage_screen/  # Messaging interface
+    │   ├── notification/    # Notification center
+    │   ├── onbording/       # Onboarding flow
+    │   └── settings/        # Settings and profile screens
+    └── widgets/             # Reusable UI components
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Flutter SDK 3.6.0 or higher
+- Dart SDK 3.6.0 or higher
+- Android Studio / Xcode for platform-specific builds
+- CocoaPods (for iOS)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd iywt
+```
+
+2. Install dependencies:
+```bash
+flutter pub get
+```
+
+3. Generate required files:
+```bash
+flutter pub run build_runner build --delete-conflicting-outputs
+```
+
+4. Generate app icons:
+```bash
+flutter pub run flutter_launcher_icons
+```
+
+5. Run the application:
+```bash
+flutter run
+```
+
+## Build & Deployment
+
+### Android
+```bash
+flutter build apk --release
+# or for app bundle
+flutter build appbundle --release
+```
+
+### iOS
+```bash
+flutter build ios --release
+```
+
+## Configuration
+
+### Environment Setup
+Configure API endpoints and environment variables in:
+- `lib/global/constant/api_constant.dart`
+
+### Assets
+Place your assets in the following directories:
+- Icons: `assets/icons/`
+- Images: `assets/images/`
+
+## Development Guidelines
+
+### Code Style
+- Follow Dart's official style guide
+- Use meaningful variable and function names
+- Add comments for complex logic
+- Maintain consistent formatting (use `flutter format`)
+
+### State Management
+- Controllers handle business logic and state
+- Services manage API calls and data operations
+- Models define data structures
+
+### Testing
+```bash
+flutter test
+```
+
+## Version History
+
+- **v1.0.3+4** - Current stable release
+
+## Platform Support
+
+- ✅ Android (API 21+)
+- ✅ iOS (iOS 12.0+)
+
+## License
+
+This project is proprietary software. All rights reserved.
+
+## Contact & Support
+
+For technical support or inquiries, please use the in-app technical support feature.
+
+---
+
+**Built with Flutter** 💙
 
 
 
